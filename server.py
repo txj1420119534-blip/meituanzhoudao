@@ -775,7 +775,7 @@ ADMIN_ROLE_BY_CATEGORY = {
     "火锅": "EAT", "江浙菜": "EAT", "烧烤": "EAT", "海鲜": "EAT", "简餐": "EAT", "本地小吃": "EAT", "外卖": "STAYIN",
     "剧本杀": "PLAY", "电影院": "PLAY", "KTV": "PLAY", "台球": "PLAY", "密室": "PLAY", "桌游": "PLAY", "展览": "PLAY",
     "景区": "PLAY", "按摩": "PLAY", "酒店": "PLAY",
-    "奶茶": "ADDON", "咖啡": "ADDON", "甜品": "ADDON", "冰淇淋": "ADDON", "蛋糕鲜花": "ADDON", "闪购零食": "ADDON", "酒吧": "ADDON",
+    "奶茶": "ADDON", "咖啡": "ADDON", "甜品": "ADDON", "冰淇淋": "ADDON", "蛋糕鲜花": "ADDON", "闪购零食": "STAYIN", "酒吧": "ADDON",
 }
 ADMIN_IMAGE_BY_CATEGORY = {
     "火锅": "🍲", "江浙菜": "🥢", "烧烤": "🍖", "海鲜": "🦀", "简餐": "🍱", "本地小吃": "🥟", "外卖": "🥡",
