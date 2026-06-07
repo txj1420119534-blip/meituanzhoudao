@@ -1,0 +1,3042 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>美团周到 · Workflow First Demo</title>
+  <style>
+    :root {
+      --mt-yellow: #ffd000;
+      --ink: #1f2329;
+      --muted: #747b87;
+      --line: #eceff3;
+      --soft: #f7f8fa;
+      --green: #18a058;
+      --red: #e5484d;
+      --blue: #276ef1;
+      --shadow: 0 18px 45px rgba(15, 23, 42, .12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(120deg, #fff8d8 0%, #f2f7ff 46%, #ffffff 100%);
+    }
+    .shell {
+      width: min(1320px, calc(100vw - 32px));
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: minmax(400px, 480px) 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .phone {
+      height: 920px;
+      border: 12px solid #15171a;
+      border-radius: 34px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .phone-top {
+      background: var(--mt-yellow);
+      padding: 18px 18px 16px;
+    }
+    .brand {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 800;
+      font-size: 18px;
+    }
+    .brand small, .brand a { font-size: 12px; font-weight: 700; color: #5a4a00; text-decoration: none; }
+    .hero {
+      margin-top: 16px;
+      font-size: 22px;
+      line-height: 1.25;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+    .subline {
+      margin-top: 8px;
+      color: #6d5b00;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+    .content { padding: 18px; flex: 1; overflow-y: auto; overscroll-behavior: contain; }
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .step {
+      min-height: 54px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      background: #fff;
+    }
+    .step.on { border-color: #191919; background: #fff9d7; }
+    .step b { display: block; font-size: 12px; }
+    .step span { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .panel h2, .panel h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    .panel p { margin: 6px 0; color: var(--muted); line-height: 1.5; font-size: 13px; }
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      border: 1px solid #d8dde6;
+      border-radius: 8px;
+      padding: 12px;
+      line-height: 1.5;
+      font: inherit;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .chip, button {
+      border: 1px solid #d8dde6;
+      background: #fff;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .chip:hover, button:hover { border-color: #191919; }
+    .primary {
+      background: #191919;
+      color: #fff;
+      border-color: #191919;
+      font-weight: 800;
+    }
+    .secondary {
+      background: var(--mt-yellow);
+      border-color: var(--mt-yellow);
+      color: #1f2329;
+      font-weight: 800;
+    }
+    .ghost { background: var(--soft); }
+    .danger { border-color: #ffc9ca; color: var(--red); background: #fff6f6; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .row > * { flex: 0 0 auto; }
+    .kv {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 8px;
+      font-size: 13px;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--line);
+    }
+    .kv:last-child { border-bottom: 0; }
+    .kv span:first-child { color: var(--muted); }
+    .question {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #fcfcfd;
+    }
+    .question-title { font-size: 13px; font-weight: 800; margin-bottom: 8px; }
+    .plans {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(306px, 1fr);
+      overflow-x: auto;
+      gap: 12px;
+      padding-bottom: 8px;
+    }
+    .plan-card {
+      border: 1px solid #dfe3ea;
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+      min-height: 360px;
+    }
+    .plan-card.selected { border: 2px solid #191919; }
+    .plan-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+    .plan-label { font-size: 12px; color: var(--blue); font-weight: 900; }
+    .plan-title { margin: 3px 0 0; font-weight: 900; font-size: 17px; line-height: 1.25; }
+    .merchant-line { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+    .merchant-logo { width: 40px; height: 40px; border-radius: 8px; background: var(--soft); display: grid; place-items: center; font-weight: 900; }
+    .merchant-name { font-weight: 900; line-height: 1.25; }
+    .merchant-meta { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .metric-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+    .metric {
+      background: var(--soft);
+      border-radius: 8px;
+      padding: 9px;
+      font-size: 12px;
+    }
+    .metric b { display: block; font-size: 14px; margin-top: 2px; }
+    .block {
+      border-top: 1px solid var(--line);
+      padding: 10px 0;
+      font-size: 13px;
+    }
+    .block b { display: block; margin-bottom: 4px; }
+    .quick-facts { display: grid; gap: 6px; margin: 12px 0; font-size: 13px; }
+    .quick-fact { padding: 8px 10px; border-radius: 8px; background: #f8fafc; color: #374151; }
+    .risk-line { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #fff7ed; color: #946200; font-size: 13px; }
+    .segment {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+    .segment-head { display: flex; justify-content: space-between; gap: 10px; }
+    .segment-title { font-weight: 900; }
+    .segment-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .tag { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 8px; border-radius: 8px; background: var(--soft); font-size: 12px; color: #4b5563; margin: 3px 4px 0 0; }
+    .tag.good { color: var(--green); background: #edf9f2; }
+    .tag.warn { color: #946200; background: #fff6d1; }
+    .friend-box {
+      background: #f6faff;
+      border: 1px solid #d9e8ff;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    .drawer {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      width: auto;
+      max-height: 78%;
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid #dfe3ea;
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      z-index: 20;
+      display: none;
+    }
+    .drawer.open { display: block; }
+    .busy-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(2px);
+      padding: 24px;
+    }
+    .busy-layer.open { display: flex; }
+    .busy-card {
+      width: min(320px, 90%);
+      border: 1px solid #dfe3ea;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      text-align: center;
+    }
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid #f0f0f0;
+      border-top-color: #191919;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      animation: spin .85s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .drawer-bar { width: 42px; height: 4px; border-radius: 99px; background: #d1d5db; margin: 0 auto 12px; }
+    .bill-row, .split-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
+    .split-row { grid-template-columns: auto 1fr 92px; }
+    .split-row input[type="number"] { width: 86px; padding: 7px; border: 1px solid var(--line); border-radius: 8px; }
+    .mock-link { font-size: 12px; color: var(--blue); word-break: break-all; }
+    .split-note { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #fff7ed; color: #9a3412; }
+    .split-note.ok { background: #edf9f2; color: var(--green); }
+    .inline-input, input[type="text"], input[type="number"], select {
+      width: 100%;
+      border: 1px solid #d8dde6;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+    }
+    .context-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .context-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    input[type="time"] {
+      width: 100%;
+      border: 1px solid #d8dde6;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+    }
+    .template-chip {
+      text-align: left;
+      line-height: 1.4;
+      max-width: 100%;
+    }
+    .merchant-hero {
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fff1a8, #fff7d8);
+      padding: 18px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .merchant-hero .big-logo { width: 58px; height: 58px; border-radius: 12px; background: #fff; display: grid; place-items: center; font-size: 28px; }
+    .coupon-card { border: 1px solid #ffd6a6; background: #fff8ed; border-radius: 8px; padding: 10px; margin: 8px 0; }
+    .exec-step {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+    .exec-step.current { border-color: #191919; background: #fff9d7; }
+    .exec-step.future { background: #f8fafc; color: #6b7280; }
+    .exec-step.done { background: #f3f4f6; color: #6b7280; }
+    .exec-step.viewing { box-shadow: 0 0 0 2px var(--mt-yellow) inset; }
+    .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .drawer-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; position: sticky; bottom: 0; background: #fff; padding-top: 10px; }
+    .side {
+      min-height: 860px;
+      border: 1px solid #e4e7ec;
+      border-radius: 18px;
+      background: rgba(255,255,255,.88);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+    }
+    .side h1 { margin: 0 0 8px; font-size: 22px; letter-spacing: 0; }
+    .side-card { border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-top: 12px; background: #fff; }
+    .side-card b { display: block; margin-bottom: 6px; }
+    .log { display: none; white-space: pre-wrap; max-height: 280px; overflow: auto; background: #111827; color: #e5e7eb; border-radius: 8px; padding: 12px; font-size: 12px; }
+    .log.open { display: block; }
+    .muted { color: var(--muted); }
+    .hidden { display: none !important; }
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      .side { position: static; min-height: auto; }
+      .phone { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <main class="phone">
+      <div class="phone-top">
+        <div class="brand">
+          <span>美团周到</span>
+          <small>本地 Mock 演示 · <a href="/admin">切换商家后台</a></small>
+        </div>
+        <div class="hero">说一句，我帮你把这场安排到能出门。</div>
+      </div>
+      <div class="content">
+        <div class="stepper" id="stepper"></div>
+        <section id="mainView"></section>
+      </div>
+      <div class="drawer" id="bookingDrawer"></div>
+      <div class="drawer" id="addonModal"></div>
+      <div class="busy-layer" id="busyLayer">
+        <div class="busy-card">
+          <div class="spinner"></div>
+          <b id="busyTitle">正在处理</b>
+          <p id="busyMessage">正在理解你的需求，请稍等。</p>
+        </div>
+      </div>
+    </main>
+    <aside class="side">
+      <h1>当前进度</h1>
+      <p class="muted">这里默认只显示用户能理解的信息。评委模式展开后才看执行日志。</p>
+      <div class="side-card"><b>当前目标</b><div id="sideGoal">还没开始</div></div>
+      <div class="side-card"><b>当前阶段</b><div id="sideStage">等待输入</div></div>
+      <div class="side-card"><b>已确认条件</b><div id="sideConfirmed">暂无</div></div>
+      <div class="side-card"><b>下一步</b><div id="sideNext">输入一句真实需求</div></div>
+      <div class="side-card">
+        <button class="ghost" onclick="toggleJudgeMode()">评委模式 / 执行日志</button>
+        <pre id="judgeLog" class="log"></pre>
+      </div>
+    </aside>
+  </div>
+  <script data-demo-presets type="application/json">
+    [
+      "我和 3 个朋友今晚 19:00 想在新街口到店吃饭，人均 150，想少排队，菜系都可以。",
+      "4 个人今晚 19:00 想在江宁玩欢乐本，能玩 4 小时，人均 150，公共交通。",
+      "我和女朋友 18:00 在仙林约会，人均 300，想看电影也想拍照，不想太累。",
+      "今晚宅家，2 个人，预算 100，想点外卖和零食，不想出门。"
+    ]
+  </script>
+  <script>
+    const API = "";
+    const TRUSTED_SOURCES = new Set(["explicit_text", "user_answer", "profile_memory"]);
+    const AREA_OPTIONS = ["新街口", "老门东", "河西", "夫子庙", "鼓楼", "玄武湖", "江宁", "仙林", "百家湖", "奥体", "马鞍山"];
+    const STEPS = [
+      ["intent", "确认目标"],
+      ["candidate", "比较方案"],
+      ["booking", "确认预约"],
+      ["execution", "执行处理"],
+    ];
+    let sessionId = localStorage.getItem("weekend-agent-session-id");
+    if (!sessionId) {
+      sessionId = "sid_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("weekend-agent-session-id", sessionId);
+    }
+    let session = {};
+    let stage = "input";
+    let selectedPlanIndex = null;
+    let voteRoom = null;
+    let rescueResultHTML = "";
+    let friendOutcomeHTML = "";
+    let otherIssueOpen = false;
+    let executionCurrentIndex = 0;
+    let executionViewIndex = null;
+    let couponState = {};
+
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+    }
+    function jsArg(value) {
+      return esc(JSON.stringify(String(value ?? "")));
+    }
+    function money(v) { return Number(v || 0) ? "¥" + Math.round(Number(v)) : "未定"; }
+    function businessSteps(plan) {
+      const steps = plan?.itinerary?.segments || plan?.steps || [];
+      return steps.filter(s => s.kind !== "travel" && s.kind !== "transit").map(normalizeBusinessStep);
+    }
+    function normalizeBusinessStep(s) {
+      const selectedId = s.selected_merchant || s.merchant_id || s.id;
+      const candidates = s.merchant_candidates || [];
+      const picked = candidates.find(m => m.merchant_id === selectedId || m.id === selectedId) || candidates[0] || {};
+      const merged = {...picked, ...s};
+      merged.id = selectedId || s.id || picked.merchant_id || picked.id;
+      merged.merchant_id = selectedId || s.merchant_id || picked.merchant_id || picked.id;
+      merged.name = picked.name || s.name || s.title;
+      merged.category = picked.category || s.category;
+      merged.area = picked.area || s.area;
+      merged.cost = s.cost || s.price || picked.price || picked.cost;
+      merged.price = s.price || picked.price || picked.cost || s.cost;
+      merged.rating = s.rating || picked.rating;
+      merged.review_count = s.review_count || picked.review_count;
+      merged.review_tags = s.review_tags || picked.review_tags || s.tags;
+      merged.tags = s.tags || picked.review_tags || picked.tags || [];
+      merged.review_snippet = s.review_snippet || picked.review_snippet || picked.reason;
+      merged.open = s.open || picked.open;
+      merged.close = s.close || picked.close;
+      merged.queue_minutes = s.queue_minutes ?? picked.queue_minutes;
+      merged.can_reserve = s.can_reserve ?? picked.can_reserve;
+      merged.group_deal = s.group_deal || picked.group_deal;
+      merged.image = s.image || picked.image || s.category;
+      return merged;
+    }
+    function travelSteps(plan) {
+      const steps = plan?.itinerary?.segments || plan?.steps || [];
+      return steps.filter(s => s.kind === "travel" || s.kind === "transit");
+    }
+    function transitSummaries(plan) {
+      const transits = (plan?.itinerary?.transits || []).map(t => {
+        const from = t.from?.area || t.from?.label || "出发地";
+        const to = t.to?.area || t.to?.label || "下一站";
+        const best = (t.options || [])[0] || {};
+        const min = best.duration_minutes || best.minutes || t.minutes || 0;
+        return `${from}到${to}${min ? min + "分钟" : ""}`;
+      });
+      if (transits.length) return transits;
+      return travelSteps(plan).map(t => `${t.from || ""}到${t.to || ""}${t.minutes || 0}分钟`);
+    }
+    function mainPlan() {
+      return session.chosen || (session.plans || [])[selectedPlanIndex || 0] || (session.plans || [])[0] || {};
+    }
+    function plans() { return session.plans || []; }
+    function setBusy(message = "") {
+      const layer = document.getElementById("busyLayer");
+      const msg = document.getElementById("busyMessage");
+      if (!layer) return;
+      if (message) {
+        if (msg) msg.textContent = message;
+        layer.classList.add("open");
+      } else {
+        layer.classList.remove("open");
+      }
+    }
+    async function post(path, body = {}, busyMessage = "正在处理，请稍等。") {
+      setBusy(busyMessage);
+      try {
+        const res = await fetch(API + path, {
+          method: "POST",
+          headers: {"Content-Type": "application/json", "X-Session-Id": sessionId},
+          body: JSON.stringify({session_id: sessionId, ...body})
+        });
+        const data = await res.json();
+        if (!data.ok && (data.error || data.message)) throw new Error(data.error || data.message);
+        if (data.session) session = data.session;
+        appendLog(path + " -> " + JSON.stringify(data).slice(0, 1800));
+        return data;
+      } finally {
+        setBusy("");
+      }
+    }
+    function appendLog(text) {
+      const log = document.getElementById("judgeLog");
+      log.textContent = (log.textContent + "\n" + text).trim().slice(-9000);
+    }
+    function currentStep() {
+      if (stage === "input" || stage === "clarify") return "intent";
+      if (stage === "candidates" || stage === "selected") return "candidate";
+      if (stage === "booking") return "booking";
+      return "execution";
+    }
+    function renderStepper() {
+      const el = document.getElementById("stepper");
+      if (stage === "input") {
+        el.classList.add("hidden");
+        el.innerHTML = "";
+        return;
+      }
+      el.classList.remove("hidden");
+      const cur = currentStep();
+      el.innerHTML = STEPS.map(([key, label], idx) => `
+        <div class="step ${key === cur ? "on" : ""}" onclick="jumpStep('${key}')">
+          <b>${idx + 1}. ${label}</b>
+        </div>
+      `).join("");
+    }
+    function stepIndex(key) { return STEPS.findIndex(x => x[0] === key); }
+    function maxUnlockedStep() {
+      if (stage === "execution") return "execution";
+      if (stage === "booking") return "booking";
+      if (stage === "selected" || stage === "candidates") return "candidate";
+      return "intent";
+    }
+    function jumpStep(key) {
+      if (stepIndex(key) > stepIndex(maxUnlockedStep())) {
+        alert("请先完成当前步骤");
+        return;
+      }
+      if (key === "intent") stage = (session.mode === "needs_clarification") ? "clarify" : "input";
+      if (key === "candidate") stage = session.chosen ? "selected" : "candidates";
+      if (key === "booking") stage = "booking";
+      if (key === "execution") stage = "execution";
+      window.scrollTo({top: 0, behavior: "smooth"});
+      render();
+    }
+    function clearDownstreamState(reason) {
+      if (!session) return;
+      if (reason === "intent" || reason === "clarification") {
+        selectedPlanIndex = null;
+        voteRoom = null;
+        friendOutcomeHTML = "";
+        delete session.chosen;
+        delete session.selected_plan_index;
+        delete session.vote_room;
+      }
+      if (["intent", "clarification", "candidate"].includes(reason)) {
+        delete session.booking_review;
+        delete session.bookings;
+        delete session.checkout_preview;
+        delete session.checkout_result;
+        delete session.share_card;
+      }
+      if (["intent", "clarification", "candidate", "booking"].includes(reason)) {
+        delete session.exception_result;
+        rescueResultHTML = "";
+      }
+    }
+    function render() {
+      renderStepper();
+      updateSide();
+      const view = document.getElementById("mainView");
+      if (stage === "input") view.innerHTML = inputHTML();
+      else if (stage === "clarify") view.innerHTML = clarifyHTML();
+      else if (stage === "candidates") view.innerHTML = candidatesHTML();
+      else if (stage === "selected") view.innerHTML = selectedHTML();
+      else if (stage === "booking") view.innerHTML = selectedHTML();
+      else view.innerHTML = executionHTML();
+      if (stage === "execution") setTimeout(() => updateCustomSplit(true), 0);
+    }
+    function inputHTML() {
+      return `
+        <section class="panel">
+          <h2>你想怎么玩？</h2>
+          <textarea id="requestText" data-acceptance-template="我和 3 个朋友今晚 19:00 想在新街口吃饭，人均 150" placeholder="比如：我和 3 个朋友今晚 19:00 想在新街口到店吃饭，人均 150，想少排队，菜系都可以。"></textarea>
+          <div class="chips">
+            <button class="chip template-chip" onclick="useDemoPreset(0)">我和 3 个朋友今晚 19:00 想在新街口到店吃饭，人均 150，想少排队，菜系都可以。</button>
+            <button class="chip template-chip" onclick="useDemoPreset(1)">4 个人今晚 19:00 想在江宁玩欢乐本，能玩 4 小时，人均 150，公共交通。</button>
+            <button class="chip template-chip" onclick="useDemoPreset(2)">我和女朋友 18:00 在仙林约会，人均 300，想看电影也想拍照，不想太累。</button>
+            <button class="chip template-chip" onclick="useDemoPreset(3)">今晚宅家，2 个人，预算 100，想点外卖和零食，不想出门。</button>
+          </div>
+          <div class="context-grid">
+            <div class="context-field">
+              <label for="currentArea">我现在在哪</label>
+              <select id="currentArea">
+                <option value="">不指定</option>
+                ${AREA_OPTIONS.map(area => `<option value="${esc(area)}">${esc(area)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="context-field">
+              <label for="startTimeInput">几点出发</label>
+              <input id="startTimeInput" type="time">
+            </div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <button class="primary" onclick="planFromInput()">${plans().length ? "重新规划" : "帮我安排"}</button>
+            <button class="ghost" onclick="resetFlow()">重置</button>
+          </div>
+        </section>
+      `;
+    }
+    function useDemoPreset(index) {
+      const node = document.querySelector("script[data-demo-presets]");
+      const data = JSON.parse(node.textContent || "[]");
+      const input = document.getElementById("requestText");
+      if (input) input.value = data[index] || "";
+    }
+    async function planFromInput() {
+      const text = document.getElementById("requestText").value.trim();
+      if (!text) return alert("先说一句你想怎么玩。");
+      try {
+        clearDownstreamState("intent");
+        const planning_context = {};
+        const area = document.getElementById("currentArea")?.value || "";
+        const startTime = document.getElementById("startTimeInput")?.value || "";
+        if (area) planning_context.home_area = area;
+        if (startTime) planning_context.start_time = startTime;
+        const data = await post(
+          "/plan",
+          {text, planning_context},
+          "正在理解需求和调用模型，可能需要几秒。"
+        );
+        session = data.session || {};
+        selectedPlanIndex = null;
+        if ((session.mode === "needs_clarification") || ((session.request || {}).missing_fields || []).length) stage = "clarify";
+        else stage = plans().length ? "candidates" : "clarify";
+        render();
+      } catch (e) { alert(e.message); }
+    }
+    function publicIntent() {
+      const req = session.request || {};
+      const frame = req.intent_frame || {};
+      const fields = frame.confirmed_fields || {};
+      const sources = frame.field_sources || {};
+      const confirmed = [];
+      const labels = {
+        party_size: "人数",
+        start_time: "时间",
+        duration_minutes: "可用时长",
+        home_area: "位置",
+        budget_per_person: "预算",
+        transport: "出行方式",
+        cuisine_preference: "菜系",
+        occasion: "场合"
+      };
+      Object.keys(labels).forEach(k => {
+        if (TRUSTED_SOURCES.has(sources[k]) && fields[k] !== null && fields[k] !== undefined && fields[k] !== "" && fields[k] !== "unknown") {
+          confirmed.push(`<div class="kv"><span>${labels[k]}</span><b>${esc(formatField(k, fields[k]))}</b></div>`);
+        }
+      });
+      const mentioned = (req.requested_categories || []).map(esc).join("、");
+      const avoids = [...(req.negative_intents || []), ...(req.safety_flags || [])].map(labelAvoid).filter(Boolean).join("、");
+      return `
+        <section class="panel">
+          <h2>目标摘要</h2>
+          <div class="kv"><span>目标</span><b>${esc(req.goal_summary || frame.goal_summary || "还需要确认")}</b></div>
+          ${mentioned ? `<div class="kv"><span>你提到</span><b>${mentioned}</b></div>` : ""}
+          ${confirmed.join("") || `<p>还没有足够明确的信息。</p>`}
+          ${avoids ? `<div class="kv"><span>避开项</span><b>${esc(avoids)}</b></div>` : ""}
+        </section>
+      `;
+    }
+    function formatField(key, value) {
+      if (key === "party_size") return value + "人";
+      if (key === "duration_minutes") return Math.round(Number(value) / 60 * 10) / 10 + "小时";
+      if (key === "budget_per_person") return "¥" + value + "/人";
+      if (key === "transport") return value === "public" ? "公共交通" : value === "self_drive" ? "自驾" : value;
+      return value;
+    }
+    function labelAvoid(key) {
+      return {
+        no_meal: "不安排吃饭",
+        no_outdoor: "不出门",
+        no_spicy: "不吃辣",
+        no_alcohol: "不喝酒",
+        cannot_ice: "不能喝冰",
+        not_too_sweet: "不要太甜",
+        body_uncomfortable: "身体不舒服",
+        kid_safe: "适合孩子",
+        caffeine_free: "不要咖啡因"
+      }[key] || key;
+    }
+    function clarifyHTML() {
+      const req = session.request || {};
+      const questions = req.clarifications_needed || session.clarifications_needed || [];
+      const known = [];
+      const frame = req.intent_frame || {};
+      const fields = frame.confirmed_fields || {};
+      const sources = frame.field_sources || {};
+      if (req.requested_categories?.length) known.push(req.requested_categories.join("、"));
+      if (TRUSTED_SOURCES.has(sources.party_size) && fields.party_size) known.push(fields.party_size + "人");
+      if (TRUSTED_SOURCES.has(sources.budget_per_person) && fields.budget_per_person) known.push("¥" + fields.budget_per_person + "/人");
+      return `
+        <section class="panel">
+          <h2>还差这些信息</h2>
+          ${questions.length ? questions.map(questionHTML).join("") : `<div class="question"><div class="question-title">请补一句更具体的目标</div><textarea id="freeformAnswer" placeholder="例如：18:00，新街口，人均150"></textarea></div>`}
+          <button class="primary" onclick="submitClarify()">确认，开始找店</button>
+        </section>
+      `;
+    }
+    function questionHTML(q) {
+      const options = (q.options || []).filter(o => !isPastTime(q.key, o.value || o.label));
+      const multi = q.multi === true || q.type === "multi_chip";
+      const customCuisine = q.key === "cuisine_preference" || String(q.question || "").includes("吃哪类");
+      if (q.key === "start_time") {
+        return `
+          <div class="question" data-key="${esc(q.key)}" data-multi="false">
+            <div class="question-title">${esc(q.question || "大概几点开始？")}</div>
+            <input type="time" oninput="setFreeAnswer(this)">
+          </div>
+        `;
+      }
+      if (q.key === "home_area") {
+        return `
+          <div class="question" data-key="${esc(q.key)}" data-multi="false">
+            <div class="question-title">${esc(q.question || "你现在/优先从哪片区域开始？")}</div>
+            <select onchange="setFreeAnswer(this)">
+              <option value="">请选择区域</option>
+              ${AREA_OPTIONS.map(area => `<option value="${esc(area)}">${esc(area)}</option>`).join("")}
+            </select>
+          </div>
+        `;
+      }
+      return `
+        <div class="question" data-key="${esc(q.key)}" data-multi="${multi ? "true" : "false"}">
+          <div class="question-title">${esc(q.question || q.label || q.key)}${multi ? "（可多选）" : ""}</div>
+          <div class="chips">
+            ${options.map(o => `<button class="chip" data-value="${esc(o.value)}" onclick="chooseAnswer(this)">${esc(o.label)}</button>`).join("")}
+          </div>
+          ${customCuisine ? `<input class="inline-input" style="margin-top:10px" placeholder="自己写：比如云南菜、日料、东北菜" oninput="setFreeAnswer(this)">` : ""}
+        </div>
+      `;
+    }
+    function isPastTime(key, value) {
+      if (key !== "start_time") return false;
+      const m = String(value).match(/(\d{1,2}):(\d{2})/);
+      if (!m) return false;
+      const now = new Date();
+      const minutes = Number(m[1]) * 60 + Number(m[2]);
+      const current = now.getHours() * 60 + now.getMinutes();
+      return minutes <= current - 10;
+    }
+    function chooseAnswer(btn) {
+      const box = btn.closest(".question");
+      if (box.dataset.multi === "true") {
+        btn.classList.toggle("secondary");
+        const selected = [...box.querySelectorAll("button.secondary")].map(b => b.dataset.value);
+        box.dataset.value = JSON.stringify(selected);
+      } else {
+        box.querySelectorAll("button").forEach(b => b.classList.remove("secondary"));
+        btn.classList.add("secondary");
+        box.dataset.value = btn.dataset.value;
+      }
+    }
+    function setFreeAnswer(input) {
+      const box = input.closest(".question");
+      box.querySelectorAll("button").forEach(b => b.classList.remove("secondary"));
+      box.dataset.value = input.value.trim();
+    }
+    async function submitClarify() {
+      const answers = {};
+      document.querySelectorAll(".question[data-key]").forEach(box => {
+        if (!box.dataset.value) return;
+        if (box.dataset.multi === "true") {
+          try {
+            answers[box.dataset.key] = JSON.parse(box.dataset.value).map(v => normalizeAnswer(box.dataset.key, v));
+          } catch (e) {
+            answers[box.dataset.key] = normalizeAnswer(box.dataset.key, box.dataset.value);
+          }
+        } else {
+          answers[box.dataset.key] = normalizeAnswer(box.dataset.key, box.dataset.value);
+        }
+      });
+      const free = document.getElementById("freeformAnswer");
+      if (free?.value.trim()) answers.freeform = free.value.trim();
+      try {
+        clearDownstreamState("clarification");
+        const data = await post("/clarify", {answers}, "正在按你补充的信息重新找店和排时间线。");
+        session = data.session || {};
+        stage = plans().length ? "candidates" : ((session.mode === "needs_clarification") ? "clarify" : "candidates");
+        render();
+      } catch (e) { alert(e.message); }
+    }
+    function normalizeAnswer(key, value) {
+      if (["party_size", "budget_per_person", "window_hours", "duration_minutes"].includes(key)) {
+        const n = Number(String(value).replace(/[^\d.]/g, ""));
+        return Number.isFinite(n) ? n : value;
+      }
+      return value;
+    }
+    function candidatesHTML() {
+      const list = plans();
+      return `
+        <section class="panel">
+          <h2>候选方案横向比较</h2>
+          <p>先看两个候选。朋友可以一起挑，最后由发起人点立即预约。</p>
+          <div class="plans">${list.map((p, i) => planCardHTML(p, i)).join("") || `<p>还没有可用方案。</p>`}</div>
+          ${friendCoSelectHTML()}
+        </section>
+      `;
+    }
+    function planCardHTML(plan, index) {
+      const segs = businessSteps(plan);
+      const first = segs[0] || {};
+      const travel = travelSteps(plan);
+      const transitFacts = transitSummaries(plan);
+      const end = (segs[segs.length - 1] || {}).end || "待定";
+      const tags = [
+        ...(first.tags || []),
+        ...(plan.focus ? String(plan.focus).split(" · ") : [])
+      ].filter(Boolean).slice(0, 5);
+      const queueText = deliveryFact(first) || (first.can_reserve ? `可预约${first.start ? " " + first.start : ""}` : (first.queue_minutes ? `预计排队${first.queue_minutes}分钟` : "到店前确认"));
+      const leadName = first.name || first.title || plan.title || `Plan ${index === 0 ? "A" : "B"}`;
+      return `
+        <article class="plan-card ${selectedPlanIndex === index ? "selected" : ""}">
+          <div class="plan-head">
+            <div>
+              <div class="plan-label">Plan ${index === 0 ? "A" : "B"}</div>
+              <div class="plan-title">${esc(leadName)}</div>
+            </div>
+            <button class="secondary" onclick="selectPlan(${index})">选这个方案</button>
+          </div>
+          ${merchantLineHTML(first)}
+          <div class="metric-bar">
+            <div class="metric">人均<b>${money(plan.total_cost_per_person)}</b></div>
+            <div class="metric">用时<b>${Math.round((plan.total_minutes || 0) / 60 * 10) / 10 || "待定"}小时</b></div>
+          </div>
+          <div class="quick-facts">
+            <div class="quick-fact">🚇 ${isDeliverySegment(first) ? "美团外卖 / 闪购配送" : (transitFacts.length ? esc(transitFacts.join("；")) : "起点待确认，先按轻规则估算交通")}</div>
+            <div class="quick-fact">⭐ ${first.rating || "待补"}${first.review_count ? ` · ${first.review_count}条评价` : ""}</div>
+            <div class="quick-fact">🪑 ${esc(queueText)} · ${esc((segs[segs.length - 1] || {}).area || "待定")} ${esc(end)}</div>
+            <div class="quick-fact">🕒 营业 ${esc(first.open || "待补")} - ${esc(first.close || "待补")}</div>
+          </div>
+          <div>${tags.map(x => `<span class="tag good">${esc(x)}</span>`).join("")}</div>
+          ${segs.length > 1 ? `<div class="block">${segs.slice(1).map(segmentMiniHTML).join("")}</div>` : ""}
+          ${scriptTags(first)}
+          <p>${esc(first.review_snippet || plan.focus || "匹配你已经确认的条件")}</p>
+          <div class="row"><button onclick="openMerchantDetail(${index}, 0)">查看商详</button></div>
+          <div class="risk-line">${(plan.risks || []).length ? (plan.risks || []).map(esc).join("；") : "风险提示：均为本地 Mock，最终以到店/下单前确认页为准。"}</div>
+          ${candidateEvidenceHTML(plan)}
+        </article>
+      `;
+    }
+    function isDeliverySegment(s) {
+      const cat = s?.category || "";
+      return s?.kind === "delivery" || s?.kind === "stayin" || ["外卖", "闪购零食"].includes(cat);
+    }
+    function isDeliveryPlan(plan) {
+      const segs = businessSteps(plan);
+      return segs.length > 0 && segs.every(isDeliverySegment);
+    }
+    function deliveryFact(s) {
+      if (!isDeliverySegment(s)) return "";
+      const minutes = s.delivery_minutes || s.duration_minutes || 35;
+      const fee = Number(s.delivery_fee ?? 5);
+      return `美团外卖 · 配送约${minutes}分钟 · 配送费¥${fee}`;
+    }
+    function merchantLineHTML(s) {
+      return `
+        <div class="merchant-line">
+          <div class="merchant-logo">${esc(s.image || s.category || "店").slice(0, 4)}</div>
+          <div>
+            <div class="merchant-name">${esc(s.name || s.title || s.category || "待定商户")}</div>
+            <div class="merchant-meta">${esc(s.category || "")} · ${esc(s.area || "")}</div>
+          </div>
+        </div>
+      `;
+    }
+    function openMerchantDetail(planIndex = selectedPlanIndex ?? 0, segmentIndex = 0) {
+      const plan = (plans()[planIndex] || mainPlan() || {});
+      const seg = businessSteps(plan)[segmentIndex] || businessSteps(plan)[0] || {};
+      renderMerchantDetail(seg);
+    }
+    function openSegmentMerchantDetail(segmentIndex = 0) {
+      const seg = businessSteps(mainPlan())[segmentIndex] || {};
+      renderMerchantDetail(seg);
+    }
+    function merchantCoupons(s) {
+      if (Array.isArray(s.coupons) && s.coupons.length >= 2) return s.coupons.slice(0, 2);
+      const base = Number(s.cost || s.price || 50);
+      return [
+        {coupon_id: `${s.id || "merchant"}_c1`, title: `${s.category || "店铺"}立减券（Mock）`, price: Math.max(1, Math.round(base * .88)), save: Math.max(3, Math.round(base * .12)), description: "本地演示券，不连接真实库存或支付。"},
+        {coupon_id: `${s.id || "merchant"}_c2`, title: `${s.category || "店铺"}多人套餐券（Mock）`, price: Math.max(1, Math.round(base * 1.7)), save: Math.max(5, Math.round(base * .2)), description: "可在执行页模拟购买与核验。"}
+      ];
+    }
+    function merchantFeatures(s) {
+      const list = [
+        ...(s.features || []),
+        ...(s.recommended_dishes || []),
+        ...(s.signature_dishes || []),
+        ...(s.review_tags || s.tags || [])
+      ].filter(Boolean);
+      if (s.category === "剧本杀") {
+        const st = s.script_status || {};
+        list.unshift(st.script_name || s.script_name || "欢乐盒装本", st.style || s.script_style || "可选剧本");
+      }
+      if (isDeliverySegment(s)) list.unshift("美团外卖", `配送约${s.delivery_minutes || s.duration_minutes || 35}分钟`, `配送费¥${Number(s.delivery_fee ?? 5)}`);
+      return [...new Set(list)].slice(0, 8);
+    }
+    function renderMerchantDetail(s) {
+      const modal = document.getElementById("addonModal");
+      const coupons = merchantCoupons(s);
+      modal.classList.add("open");
+      modal.innerHTML = `
+        <div class="drawer-bar"></div>
+        <div class="merchant-hero">
+          <div class="big-logo">${esc(s.image || s.category || "店").slice(0, 4)}</div>
+          <div>
+            <h2>${esc(s.name || s.title || "商家详情")}</h2>
+            <p>${esc(s.category || "")} · ${esc(s.area || "")} · ⭐ ${esc(s.rating || "待补")} · ${esc(s.review_count || 0)}条评价</p>
+            <p>营业 ${esc(s.open || "待补")} - ${esc(s.close || "待补")} · 人均 ${money(s.cost || s.price || 0)}</p>
+          </div>
+        </div>
+        <h3>店铺券</h3>
+        ${coupons.map((c, idx) => `
+          <div class="coupon-card">
+            <b>${esc(c.title || "店铺券（Mock）")}</b>
+            <p>${money(c.price)} · 省 ${money(c.save || 0)} · ${esc(c.description || "本地 Mock 券")}</p>
+            <div class="row">
+              <button class="secondary" onclick="buyCoupon('${esc(s.id || s.name || "merchant")}', ${idx})">${couponState[`${s.id || s.name}:${idx}`]?.bought ? "已购买 Mock" : "购买券 Mock"}</button>
+              <button onclick="verifyCoupon('${esc(s.id || s.name || "merchant")}', ${idx})">${couponState[`${s.id || s.name}:${idx}`]?.verified ? "已核验 Mock" : "核验券 Mock"}</button>
+            </div>
+          </div>
+        `).join("")}
+        <h3>特色</h3>
+        <div>${merchantFeatures(s).map(x => `<span class="tag good">${esc(x)}</span>`).join("")}</div>
+        <p class="muted">本页只展示本地 Mock 商详、券购买与核验状态，不连接真实商家、真实库存或真实支付。</p>
+        <button onclick="closeAddonModal()">关闭</button>
+      `;
+    }
+    function buyCoupon(mid, idx) {
+      const key = `${mid}:${idx}`;
+      couponState[key] = {...(couponState[key] || {}), bought: true};
+      alert("已购买 Mock 券，不会触发真实支付。");
+    }
+    function verifyCoupon(mid, idx) {
+      const key = `${mid}:${idx}`;
+      couponState[key] = {...(couponState[key] || {}), verified: true};
+      alert("已核验 Mock 券，不会联系真实商家。");
+    }
+    function candidateEvidenceHTML(plan) {
+      const meta = plan.matching_meta || {};
+      if (!meta.candidate_pool_size) return "";
+      return `
+        <details class="block">
+          <summary>评委调试信息：数据筛选证据</summary>
+          <p>从 ${meta.candidate_pool_size} 条 Mock 商户中筛选；区域剩 ${meta.filtered_by_area_count ?? "-"}，品类剩 ${meta.filtered_by_category_count ?? "-"}，预算剩 ${meta.filtered_by_budget_count ?? "-"}。</p>
+          <p>选中商户 ID：${esc((meta.selected_merchant_ids || []).join("、") || "无")}</p>
+        </details>
+      `;
+    }
+    function originText(plan) {
+      const req = session.request || {};
+      const frame = req.intent_frame || {};
+      const area = (frame.confirmed_fields || {}).home_area;
+      const source = (frame.field_sources || {}).home_area;
+      if (TRUSTED_SOURCES.has(source) && area) return area;
+      return plan.origin || "待确认后作为起点";
+    }
+    function segmentMiniHTML(s) {
+      return `<div style="margin:7px 0"><b>${esc(s.name || s.title || s.category)}</b><span class="muted"> ${esc(s.start || "")}-${esc(s.end || "")} · ${esc(s.category || "")}</span>${scriptTags(s)}</div>`;
+    }
+    function scriptTags(s) {
+      if (s.category !== "剧本杀") return "";
+      const st = s.script_status || {};
+      const pieces = [
+        st.script_name || s.script_name,
+        st.style || s.script_style,
+        st.required_players ? `${st.required_players}人本` : "",
+        st.need_players === 0 || st.can_start_if_join ? "加入后可成行" : (st.need_players ? `还差${st.need_players}人` : ""),
+        s.dm_rating ? `DM ${s.dm_rating}` : "",
+        s.newbie_friendly ? "新手友好" : "",
+        s.horror_level ? `恐怖度${s.horror_level}` : "",
+        s.duration_minutes ? `${Math.round(s.duration_minutes/60*10)/10}小时` : ""
+      ].filter(Boolean);
+      return `<div>${pieces.map(x => `<span class="tag good">${esc(x)}</span>`).join("")}</div>`;
+    }
+    async function selectPlan(index) {
+      try {
+        clearDownstreamState("candidate");
+        selectedPlanIndex = index;
+        const data = await post("/select", {plan_index: index});
+        session = data.session || {};
+        selectedPlanIndex = index;
+        stage = "selected";
+        render();
+      } catch (e) { alert(e.message); }
+    }
+    function friendCoSelectHTML() {
+      return `
+        <div class="friend-box">
+          <h3>喊朋友一起挑</h3>
+          <p>先看看朋友怎么想，再一起决定</p>
+          <div class="row">
+            <button onclick="createVoteRoom()">分享给朋友</button>
+            <button onclick="mockFriendVote('plan_0', 0)">Plan A 胜出</button>
+            <button onclick="mockFriendVote('plan_1', 1)">Plan B 胜出</button>
+            <button onclick="mockFriendRejectAll()">都不要</button>
+          </div>
+          <div id="voteBox">${voteRoomHTML()}${friendOutcomeHTML}</div>
+        </div>
+      `;
+    }
+    function voteRoomHTML() {
+      if (!voteRoom) return `<p class="muted">还未生成共选链接。你也可以直接选方案进入下一步。</p>`;
+      const summary = voteRoom.summary || {};
+      return `
+        <div class="share-text">Mock 共选链接：${esc(voteRoom.share_url || voteRoom.link || "")}</div>
+        <p>当前票数：${esc(JSON.stringify(summary.vote_counts || summary.votes || {}))}</p>
+        ${summary.requires_replan ? `<button class="danger" onclick="resolveVoteFeedback('${esc(voteRoom.room_id)}')">按朋友反馈局部修改方案</button>` : ""}
+      `;
+    }
+    async function createVoteRoom() {
+      const data = await post("/vote/create", {});
+      voteRoom = data.room || session.vote_room || null;
+      stage = plans().length ? "candidates" : "selected";
+      render();
+    }
+    async function mockFriendVote(optionId, planIndex = 0) {
+      if (!voteRoom) await createVoteRoom();
+      if (!voteRoom?.room_id) return;
+      const data = await post(`/vote/${voteRoom.room_id}`, {voter: "朋友A", option_id: optionId});
+      voteRoom = data.room || voteRoom;
+      friendOutcomeHTML = `
+        <div class="segment">
+          <b>${planIndex === 0 ? "Plan A" : "Plan B"} 朋友票数领先</b>
+          <p>共选只是朋友反馈，仍需要发起人最终操作，不会自动预约。</p>
+          <button class="primary" onclick="acceptFriendChoice(${planIndex})">立即预约</button>
+        </div>`;
+      render();
+    }
+    function mockFriendRejectAll() {
+      if (session.plans?.length > 1) session.plans = [...session.plans.slice(1), session.plans[0]];
+      selectedPlanIndex = null;
+      friendOutcomeHTML = `
+        <div class="segment">
+          <b>朋友都不要这批候选</b>
+          <p>Mock 反馈：朋友想吃火锅。我先换一批候选，你们再挑。</p>
+        </div>`;
+      stage = "candidates";
+      render();
+    }
+    async function acceptFriendChoice(planIndex) {
+      await selectPlan(planIndex);
+      await openBookingDrawer();
+    }
+    async function mockFriendFeedback(kind) {
+      if (!voteRoom) await createVoteRoom();
+      if (!voteRoom?.room_id) return;
+      const target = kind === "restaurant" ? "restaurant" : "time";
+      const option = (voteRoom.options || []).find(o => o.target === target || o.kind === target) || (voteRoom.options || [])[0] || {};
+      const feedback = kind === "restaurant" ? "这家餐厅饭点会不会排队？" : "我可能晚到30分钟";
+      const data = await post(`/vote/${voteRoom.room_id}`, {voter: "朋友B", option_id: option.option_id || "plan_0", feedback});
+      voteRoom = data.room || voteRoom;
+      render();
+    }
+    async function resolveVoteFeedback(roomId) {
+      try {
+        const data = await post(`/vote/${roomId}/resolve`, {});
+        session = data.session || session;
+        voteRoom = data.room || voteRoom;
+        render();
+      } catch (e) { alert(e.message); }
+    }
+    function selectedHTML() {
+      const plan = mainPlan();
+      return `
+        <section class="panel">
+          <h2>已选择：${esc(plan.title || "候选方案")}</h2>
+          ${timelineHTML(plan)}
+          <div class="row" style="margin-top:12px">
+            <button class="primary" onclick="openBookingDrawer()">立即预约</button>
+          </div>
+        </section>
+      `;
+    }
+    function timelineHTML(plan, withActions = false) {
+      const segs = businessSteps(plan);
+      return segs.map((s, idx) => `
+        <div class="segment">
+          <div class="segment-head">
+            <div>
+              <div class="segment-title">${esc(s.name || s.title || s.category)}</div>
+              <div class="segment-meta">${esc(s.start || "待定")} - ${esc(s.end || "待定")} · ${esc(s.area || "")} · ${esc(s.category || "")}</div>
+            </div>
+            <span class="tag">${idx + 1}</span>
+          </div>
+          ${scriptTags(s)}
+          ${withActions ? segmentActionButtons(s, idx) : ""}
+        </div>
+      `).join("");
+    }
+    function segmentActionButtons(s, idx) {
+      if (s.kind === "travel" || s.category === "景区") return "";
+      return `
+        <div class="row" style="margin-top:10px">
+          <button onclick="openSegmentMerchantDetail(${idx})">商详 / 券</button>
+          <button onclick="mockSegmentPay(${idx}, 'coupon')">美团团购券（Mock）</button>
+          <button onclick="mockSegmentPay(${idx}, 'pay')">美团买单（Mock）</button>
+        </div>
+      `;
+    }
+    function mockSegmentPay(idx, mode) {
+      alert((mode === "coupon" ? "已打开 Mock 团购券说明：" : "已打开 Mock 买单入口：") + "不会触发真实支付，费用仍在本次账单里展示。");
+    }
+    async function openBookingDrawer() {
+      if (!session.chosen && plans().length) await selectPlan(selectedPlanIndex ?? 0);
+      if (isDeliveryPlan(mainPlan())) {
+        await confirmBooking(true);
+        return;
+      }
+      const data = await post("/booking/review", {});
+      session = data.session || session;
+      stage = "booking";
+      document.getElementById("bookingDrawer").classList.add("open");
+      document.getElementById("bookingDrawer").innerHTML = bookingDrawerHTML();
+      render();
+    }
+    function bookingDrawerHTML() {
+      const review = session.booking_review || {};
+      const planSteps = businessSteps(mainPlan());
+      const rawSegs = review.segments || planSteps.map((s, i) => ({...s, segment_index: i}));
+      const segs = rawSegs.map((s, i) => normalizeBusinessStep({...s, ...(planSteps[i] || {})}));
+      const lead = mainPlan().long_lead_addon_hint;
+      const req = session.request || {};
+      const first = segs[0] || {};
+      return `
+        <div class="drawer-bar"></div>
+        <h2>最终确认并预约</h2>
+        <p>这是本地 Mock 预约确认，不会联系商家，也不会创建订单。</p>
+        <div class="segment">
+          <b>预约信息</b>
+          <div class="kv"><span>时间</span><input id="bookingTime" type="text" value="${esc(first.arrival_time || first.start || req.start_time || "")}"></div>
+          <div class="kv"><span>人数</span><input id="bookingPeople" type="number" min="1" value="${Number(req.party_size || first.people || 1)}"></div>
+          <div class="kv"><span>联系人</span><input id="bookingContact" type="text" value="发起人（Mock）"></div>
+          <div class="kv"><span>到店方式</span><select id="bookingArrival"><option>准时到店</option><option>可能提前到</option><option>到店前电话确认</option></select></div>
+          ${mainPlanCategoryText().includes("剧本杀") ? `<div class="kv"><span>场次/包间</span><input id="bookingRoom" type="text" value="按当前可成局场次锁定（Mock）"></div>` : `<div class="kv"><span>座位/包间</span><input id="bookingRoom" type="text" value="普通座位，尽量少等（Mock）"></div>`}
+          <div class="kv"><span>备注</span><input id="bookingNote" type="text" value="如需调整，以到店前再次确认为准（Mock）"></div>
+        </div>
+        ${segs.map(s => `<div class="segment"><b>${esc(s.name || s.title || s.category)}</b><p>${bookingSegmentSummary(s, req)}</p></div>`).join("")}
+        ${lead ? `
+          <div class="segment">
+            <b>提前准备提醒：${esc(lead.category || "蛋糕鲜花")}</b>
+            <p>${esc(lead.name || "生日蛋糕/鲜花")} 可在 ${esc(lead.suggested_arrival || "到店前")} 送到 ${esc(lead.target_name || "餐厅")}（Mock）。</p>
+            <div class="row">
+              <button onclick="acceptBirthdayAddon()">加入本次账单</button>
+              <button onclick="this.closest('.segment').remove()">暂不需要</button>
+            </div>
+          </div>` : ""}
+        <div class="row">
+          <button class="primary" onclick="confirmBooking()">确认预约</button>
+          <button onclick="closeBookingDrawer()">再看一下方案</button>
+        </div>
+      `;
+    }
+    function bookingSegmentSummary(s, req) {
+      const start = s.start || s.arrival_time || req.start_time || "";
+      const end = s.end || "";
+      const time = start && end ? `${esc(start)} - ${esc(end)}` : (start ? `${esc(start)} 到店` : "到店前确认时间");
+      const area = s.area ? ` · ${esc(s.area)}` : "";
+      const category = s.category ? ` · ${esc(s.category)}` : "";
+      return `${time}${area}${category}`;
+    }
+    async function acceptBirthdayAddon() {
+      const addon = (session.optional_addons || mainPlan().optional_addons || []).find(a => String(a.title || a.type || "").includes("生日"));
+      if (addon) await acceptAddon(addon.addon_id || addon.id || addon.merchant_id);
+      else alert("已记录为 Mock 提醒，当前没有可结算的生日补给卡。");
+    }
+    function closeBookingDrawer() {
+      document.getElementById("bookingDrawer").classList.remove("open");
+    }
+    function mainPlanCategoryText() {
+      return businessSteps(mainPlan()).map(s => s.category || "").join("、");
+    }
+    function collectBookingForm() {
+      return {
+        time: document.getElementById("bookingTime")?.value || "",
+        people: document.getElementById("bookingPeople")?.value || "",
+        contact: document.getElementById("bookingContact")?.value || "",
+        arrival: document.getElementById("bookingArrival")?.value || "",
+        room: document.getElementById("bookingRoom")?.value || "",
+        note: document.getElementById("bookingNote")?.value || ""
+      };
+    }
+    async function confirmBooking(skipDrawer = false) {
+      try {
+        session.booking_form = collectBookingForm();
+        if (skipDrawer) await post("/booking/review", {});
+        const data = await post("/booking/confirm", {});
+        session = data.session || {};
+        await post("/checkout/preview", {});
+        stage = "execution";
+        executionCurrentIndex = 0;
+        executionViewIndex = null;
+        closeBookingDrawer();
+        render();
+      } catch (e) { alert(e.message); }
+    }
+    function executionHTML() {
+      const plan = mainPlan();
+      return `
+        <section class="panel">
+          <h2>执行中</h2>
+          ${executionTimelineHTML(plan)}
+          <div class="drawer-actions">
+            <button onclick="openActionDrawer('addon')">顺手来一个</button>
+            <button onclick="openActionDrawer('change')">行程有变化？</button>
+            <button onclick="openActionDrawer('bill')">账单</button>
+            <button onclick="openActionDrawer('support')">联系客服</button>
+          </div>
+        </section>
+      `;
+    }
+    function executionTimelineHTML(plan) {
+      const items = executionItems(plan);
+      const view = executionViewIndex ?? executionCurrentIndex;
+      return items.map((item, idx) => {
+        const status = idx < executionCurrentIndex ? "done" : (idx === executionCurrentIndex ? "current" : "future");
+        const viewing = idx === view && idx !== executionCurrentIndex ? " viewing" : "";
+        const action = idx < executionCurrentIndex
+          ? `<button onclick="viewExecutionStep(${idx})">查看</button>`
+          : idx === executionCurrentIndex
+            ? `<button class="primary" onclick="completeExecutionStep(${idx})">已完成</button>`
+            : `<button disabled>未开始</button>`;
+        return `
+          <div class="exec-step ${status}${viewing}">
+            <div class="segment-head">
+              <div>
+                <div class="segment-title">${esc(item.title)}</div>
+                <div class="segment-meta">${esc(item.meta || "")}</div>
+              </div>
+              <span class="tag">${idx + 1}</span>
+            </div>
+            ${item.segment ? `<div class="row" style="margin-top:8px"><button onclick="openSegmentMerchantDetail(${item.segmentIndex || 0})">商详 / 买券 / 核验</button></div>` : ""}
+            <div class="row" style="margin-top:10px">${action}</div>
+          </div>
+        `;
+      }).join("");
+    }
+    function executionItems(plan) {
+      const segs = businessSteps(plan);
+      if (isDeliveryPlan(plan)) {
+        const first = segs[0] || {};
+        const delivery = deliveryFact(first) || "美团外卖 · 配送约35分钟 · 配送费¥5";
+        return [
+          {title: "提交外卖需求", meta: `${esc(first.name || "美团外卖")} · ${esc(first.category || "")}`, segment: first, segmentIndex: 0},
+          {title: "等待配送", meta: delivery, segment: first, segmentIndex: 0},
+          {title: "送达 / 收货", meta: "确认收到后，本次宅家安排完成。", segment: first, segmentIndex: 0}
+        ];
+      }
+      const items = [];
+      const origin = originText(plan);
+      const all = plan.steps || [];
+      const firstBiz = segs[0] || {};
+      const firstTransit = (plan.itinerary?.transits || [])[0];
+      const firstTransitOption = (firstTransit?.options || [])[0] || {};
+      const firstTransitMin = firstTransitOption.duration_minutes || travelSteps(plan)[0]?.minutes || 20;
+      const firstTransitFrom = firstTransit?.from?.area || origin;
+      const firstTransitTo = firstTransit?.to?.area || firstBiz.area || "第一站";
+      items.push({title: "从出发地前往第一站", meta: `${firstTransitFrom} → ${firstTransitTo} · ${firstTransitMin}分钟`});
+      all.forEach((s, rawIdx) => {
+        if (s.kind === "travel" || s.kind === "transit") {
+          items.push({title: "路上移动", meta: `${s.from || ""} → ${s.to || ""} · ${s.minutes || 0}分钟`});
+        } else {
+          const bizIdx = Math.max(0, segs.findIndex(x => x.id === s.id && x.start === s.start));
+          items.push({title: s.name || s.title || s.category || "行程节点", meta: `${s.start || "待定"}-${s.end || "待定"} · ${s.area || ""} · ${s.category || ""}`, segment: s, segmentIndex: bizIdx});
+        }
+      });
+      const last = segs[segs.length - 1] || {};
+      const returnTransit = (plan.itinerary || {}).return_transit || {};
+      const returnOption = (returnTransit.options || [])[0] || {};
+      const returnFrom = returnTransit.from?.area || last.area || "最后一站";
+      const returnTo = returnTransit.to?.area || origin;
+      items.push({title: "从最后一站回家", meta: `${returnFrom} → ${returnTo} · ${returnOption.duration_minutes || 25}分钟`});
+      return items;
+    }
+    function completeExecutionStep(idx) {
+      if (idx === executionCurrentIndex) executionCurrentIndex = Math.min(executionCurrentIndex + 1, executionItems(mainPlan()).length);
+      executionViewIndex = null;
+      render();
+    }
+    function viewExecutionStep(idx) {
+      if (idx < executionCurrentIndex) {
+        executionViewIndex = idx;
+        render();
+      }
+    }
+    function openActionDrawer(type) {
+      const modal = document.getElementById("addonModal");
+      modal.classList.add("open");
+      if (type === "addon") modal.innerHTML = actionDrawerShell("顺手来一个", addonDrawerContent());
+      if (type === "change") modal.innerHTML = actionDrawerShell("行程有变化？", rescueDrawerContent());
+      if (type === "bill") {
+        modal.innerHTML = actionDrawerShell("账单", billDrawerContent());
+        setTimeout(() => updateCustomSplit(true), 0);
+      }
+      if (type === "support") modal.innerHTML = actionDrawerShell("联系客服", supportDrawerContent());
+    }
+    function actionDrawerShell(title, body) {
+      return `<div class="drawer-bar"></div><h2>${esc(title)}</h2>${body}<button onclick="closeAddonModal()">关闭</button>`;
+    }
+    function billDrawerContent() {
+      const checkout = session.checkout_preview || session.checkout_result || {};
+      const items = billItems(checkout);
+      const defaultTotal = Math.round(items.reduce((sum, item) => sum + Number(item.amount || 0), 0));
+      const people = splitPeople();
+      const per = people.length ? Math.round(defaultTotal / people.length) : defaultTotal;
+      return `
+        <div class="kv"><span>总金额</span><input id="customBillTotal" type="number" value="${defaultTotal}" oninput="updateCustomSplit(true)"></div>
+        <div id="billItems">${items.map(item => `<div class="bill-row"><span></span><span>${esc(item.name)}<br><span class="muted">${esc(item.note || item.category || "Mock 账单项")}</span></span><b>${money(item.amount)}</b></div>`).join("")}</div>
+        <h3>分账</h3>
+        <div id="splitPeople">
+          ${people.map(name => `
+            <label class="split-row">
+              <input type="checkbox" class="aa-person" data-name="${esc(name)}" checked onchange="updateCustomSplit(true)">
+              <span>${esc(name)}</span>
+              <input type="number" class="aa-amount" value="${per}" step="1" oninput="updateCustomSplit(false)">
+            </label>
+          `).join("")}
+        </div>
+        <p class="split-note ok" id="splitMismatch">手动金额合计与应分摊金额一致。</p>
+        <p class="mock-link" id="singleCollectLink">/mock/collect?channel=meituan-wechat&total=${defaultTotal}</p>
+        <p class="muted">美团/微信支付（Mock），只生成一个收款链接，不触发真实支付。</p>
+      `;
+    }
+    function updateCustomSplit(rebalance = true) {
+      const totalNode = document.getElementById("customBillTotal");
+      if (!totalNode) return;
+      const total = Number(totalNode.value || 0);
+      const people = [...document.querySelectorAll(".aa-person:checked")];
+      const allPeople = [...document.querySelectorAll(".aa-person")];
+      const per = people.length ? Math.round(total / people.length) : 0;
+      document.querySelectorAll(".aa-amount").forEach((node, idx) => {
+        const checked = people.includes(allPeople[idx]);
+        node.disabled = !checked;
+        if (rebalance && checked) node.value = per;
+      });
+      let manualTotal = 0;
+      document.querySelectorAll(".split-row").forEach(row => {
+        const person = row.querySelector(".aa-person");
+        const amount = row.querySelector(".aa-amount");
+        if (person?.checked) manualTotal += Number(amount?.value || 0);
+      });
+      const mismatch = document.getElementById("splitMismatch");
+      if (mismatch) {
+        const same = Math.abs(manualTotal - total) < 1;
+        mismatch.className = "split-note " + (same ? "ok" : "");
+        mismatch.textContent = same ? "手动金额合计与应分摊金额一致。" : "手动金额合计与应分摊金额不一致，可继续发送 Mock 链接。";
+      }
+      const link = document.getElementById("singleCollectLink");
+      if (link) link.textContent = `/mock/collect?channel=meituan-wechat&total=${manualTotal}&note=${encodeURIComponent("美团/微信支付 Mock")}`;
+    }
+    function addonDrawerContent() {
+      const addons = session.optional_addons || mainPlan().optional_addons || [];
+      return addons.length ? addons.slice(0, 3).map(a => `
+        <div class="segment">
+          <div class="segment-title">${esc(a.title || a.name || a.category)}</div>
+          <p>${esc(a.reason || a.description || "适合当前行程节点")}</p>
+          <div class="row">
+            <button class="secondary" onclick="openAddonModal(${addons.indexOf(a)})">打开 Mock 店铺</button>
+            <button onclick="removeAddon('${esc(a.addon_id || a.id || a.merchant_id)}')">跳过</button>
+          </div>
+        </div>
+      `).join("") : `<p>当前没有合适的可选加购。</p>`;
+    }
+    function rescueDrawerContent() {
+      return `
+        <div class="action-grid">
+          <button onclick="triggerSegmentRescue('restaurant_full')">商家满座 / 排队太久</button>
+          <button onclick="triggerSegmentRescue('time_conflict')">朋友迟到</button>
+          <button onclick="triggerSegmentRescue('time_conflict')">想改时间</button>
+          <button onclick="createSupport('coupon_help')">券不会用</button>
+          <button onclick="createSupport('refund_request')">想退款</button>
+          <button onclick="createSupport('complaint')">想投诉</button>
+          <button onclick="toggleOtherIssue()">其他问题</button>
+        </div>
+        ${otherIssueOpen ? `<div class="segment"><textarea id="otherIssueText" placeholder="写一句你的问题"></textarea><button onclick="submitOtherIssue()">提交 Mock 处理</button></div>` : ""}
+        <div id="rescueResult">${rescueResultHTML}</div>
+      `;
+    }
+    function supportDrawerContent() {
+      return `<button onclick="createSupport()">创建 Mock 帮助单</button><div id="supportBox"></div>`;
+    }
+    function billHTML() {
+      const checkout = session.checkout_preview || session.checkout_result || {};
+      const items = billItems(checkout);
+      const total = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const people = splitPeople();
+      const per = people.length ? Math.round(total / people.length) : total;
+      return `
+        <section class="panel">
+          <h2>账单与分账</h2>
+          <div class="kv"><span>本次行程总费用</span><b id="billTotal">${money(total)}</b></div>
+          <p>仅用于演示价格优化与分账，不会发起真实支付。</p>
+          <div id="billItems">
+            ${items.map((item, idx) => `
+              <label class="bill-row">
+                <input type="checkbox" class="aa-item" data-amount="${Number(item.amount || 0)}" checked onchange="updateSplitPreview(true)">
+                <span>${esc(item.name)}<br><span class="muted">${esc(item.note || item.category || "Mock 账单项")}</span></span>
+                <b>${money(item.amount)}</b>
+              </label>
+            `).join("")}
+          </div>
+          <h3>AA 分账 Mock</h3>
+          <p>可手动修改每个人要 A 的金额。勾选账单项或参与人后，会重新计算默认分摊。</p>
+          <div id="splitPeople">
+            ${people.map((name, idx) => `
+              <label class="split-row">
+                <input type="checkbox" class="aa-person" data-name="${esc(name)}" checked onchange="updateSplitPreview(true)">
+                <span>${esc(name)}<br><span class="mock-link" data-name="${esc(name)}">/mock/a-money/${encodeURIComponent(name)}?amount=${per}</span></span>
+                <input type="number" class="aa-amount" value="${per}" step="1" oninput="markManualAmount(this); updateSplitPreview(false)">
+              </label>
+            `).join("")}
+          </div>
+          <div class="kv"><span>本次 AA 金额</span><b id="splitTotal">${money(total)}</b></div>
+          <p id="splitMismatch" class="split-note ok">手动金额合计与应分摊金额一致。</p>
+          <p class="muted">上面的链接都是本地 Mock A 钱链接，金额会随手动输入同步更新。</p>
+          <div class="row">
+            <button onclick="mockPay()">一键买单 Mock</button>
+            <button onclick="splitBill()">生成 AA 分账 Mock</button>
+          </div>
+        </section>
+      `;
+    }
+    function billItems(checkout) {
+      const items = (checkout.billable_items || []).map(x => ({
+        name: x.name || x.category || "Mock 项目",
+        category: x.category,
+        amount: x.group_coupon_price || x.subtotal || x.unit_price || 0,
+        note: x.mock_coupon_id ? "美团团购券（Mock）" : "美团买单（Mock）"
+      }));
+      if (!items.length) {
+        businessSteps(mainPlan()).forEach(s => items.push({
+          name: s.name || s.category || "Mock 项目",
+          category: s.category,
+          amount: s.cost || 0,
+          note: s.group_deal || "美团买单（Mock）"
+        }));
+      }
+      const travelFee = travelSteps(mainPlan()).reduce((sum, t) => sum + (t.mode === "taxi" ? 18 : 0), 0);
+      if (travelFee > 0) items.push({name: "交通费估算（Mock）", amount: travelFee, note: "仅做本地估算"});
+      return items;
+    }
+    function splitPeople() {
+      const size = Number((session.request || {}).party_size || 4);
+      const base = ["发起人", "朋友A", "朋友B", "朋友C", "朋友D", "朋友E"];
+      return base.slice(0, Math.max(1, Math.min(size, base.length)));
+    }
+    function markManualAmount(node) {
+      node.dataset.manual = "true";
+    }
+    function updateSplitPreview(rebalance = true) {
+      const total = [...document.querySelectorAll(".aa-item:checked")].reduce((sum, node) => sum + Number(node.dataset.amount || 0), 0);
+      const people = [...document.querySelectorAll(".aa-person:checked")];
+      const per = people.length ? Math.round(total / people.length) : 0;
+      const allPeople = [...document.querySelectorAll(".aa-person")];
+      document.querySelectorAll(".aa-amount").forEach((node, idx) => {
+        const checked = people.includes(allPeople[idx]);
+        node.disabled = !checked;
+        if (rebalance && checked) {
+          node.value = per;
+          delete node.dataset.manual;
+        }
+      });
+      const totalNode = document.getElementById("billTotal");
+      if (totalNode) totalNode.textContent = money(total);
+      let manualTotal = 0;
+      document.querySelectorAll(".split-row").forEach(row => {
+        const person = row.querySelector(".aa-person");
+        const amountNode = row.querySelector(".aa-amount");
+        const link = row.querySelector(".mock-link");
+        const amount = person?.checked ? Number(amountNode?.value || 0) : 0;
+        if (person?.checked) manualTotal += amount;
+        if (link) link.textContent = `/mock/a-money/${encodeURIComponent(person?.dataset.name || "friend")}?amount=${amount}`;
+      });
+      const splitTotal = document.getElementById("splitTotal");
+      if (splitTotal) splitTotal.textContent = money(manualTotal);
+      const mismatch = document.getElementById("splitMismatch");
+      if (mismatch) {
+        const same = Math.abs(manualTotal - total) < 1;
+        mismatch.className = "split-note " + (same ? "ok" : "");
+        mismatch.textContent = same
+          ? "手动金额合计与应分摊金额一致。"
+          : "手动金额合计与应分摊金额不一致，可继续发送 Mock 链接。";
+      }
+    }
+    async function mockPay() {
+      try {
+        await post("/checkout/pay", {strategy_id: "best_combo"});
+        render();
+      } catch (e) { alert(e.message); }
+    }
+    async function splitBill() {
+      try {
+        await post("/checkout/split", {mode: "aa", members: ["发起人", "朋友A", "朋友B", "朋友C"]});
+        render();
+      } catch (e) { alert(e.message); }
+    }
+    function addonHTML() {
+      const addons = session.optional_addons || mainPlan().optional_addons || [];
+      return `
+        <section class="panel">
+          <h2>顺手加购</h2>
+          <p>可选，不影响主安排，不自动加入账单。</p>
+          ${addons.length ? addons.slice(0, 3).map(a => `
+            <div class="segment">
+              <div class="segment-title">${esc(a.title || a.name || a.category)}</div>
+              <p>${esc(a.reason || a.description || "适合当前行程节点")}</p>
+              <div class="row">
+                <button class="secondary" onclick="openAddonModal(${addons.indexOf(a)})">打开 Mock 店铺</button>
+                <button onclick="removeAddon('${esc(a.addon_id || a.id || a.merchant_id)}')">跳过</button>
+              </div>
+            </div>
+          `).join("") : `<p>当前没有合适的可选加购。</p>`}
+        </section>
+      `;
+    }
+    function openAddonModal(index) {
+      const addons = session.optional_addons || mainPlan().optional_addons || [];
+      const a = addons[index] || {};
+      const id = a.addon_id || a.id || a.merchant_id || "";
+      const contentOnly = a.billable === false || a.type === "photo_guide" || a.fulfillment_type === "content_only";
+      const modal = document.getElementById("addonModal");
+      modal.classList.add("open");
+      modal.innerHTML = `
+        <div class="drawer-bar"></div>
+        <h2>${esc(a.title || a.name || "Mock 加购")}</h2>
+        <p>${esc(a.reason || "本地 Mock 店铺页，不连接真实库存、配送或支付。")}</p>
+        <div class="segment">
+          <b>${esc(a.name || a.category || "可选内容")}</b>
+          <p>${esc(a.category || a.type || "")} · ${money(a.price || a.cost || 0)} · Mock only</p>
+        </div>
+        <div class="row">
+          ${contentOnly ? `<button onclick="closeAddonModal()">看完攻略，不进账单</button>` : `<button class="primary" onclick="acceptAddon('${esc(id)}')">加入本次账单</button>`}
+          <button onclick="removeAddon('${esc(id)}')">跳过</button>
+          <button onclick="closeAddonModal()">关闭</button>
+        </div>
+      `;
+    }
+    function closeAddonModal() {
+      document.getElementById("addonModal").classList.remove("open");
+    }
+    async function acceptAddon(id) {
+      if (!id) return;
+      await post("/addon/accept", {addon_id: id});
+      await post("/checkout/preview", {});
+      closeAddonModal();
+      render();
+    }
+    async function removeAddon(id) {
+      if (!id) return;
+      await post("/addon/remove", {addon_id: id});
+      closeAddonModal();
+      render();
+    }
+    function rescueHTML() {
+      return `
+        <section class="panel">
+          <h2>现场情况变了</h2>
+          <p>行程遇到问题，想修改？只替换出问题的节点，其它节点尽量保留。</p>
+          <div class="row">
+            <button onclick="triggerSegmentRescue('restaurant_full')">商家满座 / 排队太久</button>
+            <button onclick="triggerSegmentRescue('time_conflict')">朋友迟到</button>
+            <button onclick="triggerSegmentRescue('time_conflict')">想改时间</button>
+            <button onclick="createSupport('coupon_help')">券不会用</button>
+            <button onclick="createSupport('refund_request')">想退款</button>
+            <button onclick="createSupport('complaint')">想投诉</button>
+            <button onclick="toggleOtherIssue()">其他问题</button>
+          </div>
+          ${otherIssueOpen ? `
+            <div class="segment">
+              <b>描述你的其他问题</b>
+              <textarea id="otherIssueText" placeholder="例如：店里说券不能用、朋友临时改地点、想换近一点"></textarea>
+              <button onclick="submitOtherIssue()">提交 Mock 处理</button>
+            </div>` : ""}
+          <div id="rescueResult">${rescueResultHTML}</div>
+        </section>
+      `;
+    }
+    function toggleOtherIssue() {
+      otherIssueOpen = !otherIssueOpen;
+      openActionDrawer("change");
+    }
+    async function submitOtherIssue() {
+      const text = (document.getElementById("otherIssueText")?.value || "").trim();
+      if (!text) return alert("先写一句问题。");
+      if (/券|团购|买单/.test(text)) return createSupport("coupon_help");
+      if (/退|退款|取消/.test(text)) return createSupport("refund_request");
+      if (/投诉|态度|卫生/.test(text)) return createSupport("complaint");
+      if (/排队|满座|换近/.test(text)) return triggerSegmentRescue("restaurant_full");
+      if (/晚|改时间|迟到/.test(text)) return triggerSegmentRescue("time_conflict");
+      return createSupport("other_issue", text);
+    }
+    async function triggerSegmentRescue(type) {
+      try {
+        const plan = mainPlan();
+        const segs = businessSteps(plan);
+        const eatRole = ["E", "A", "T"].join("");
+        const idx = type === "restaurant_full" ? Math.max(0, segs.findIndex(s => s.role === eatRole || s.kind === "restaurant")) : 0;
+        const target = segs[idx] || {};
+        const data = await post("/exception", {
+          type,
+          context: {
+            type,
+            location_state: type === "restaurant_full" ? "near_current_merchant" : "before_departure",
+            current_area: target.area || "新街口",
+            current_merchant_id: target.id,
+            affected_segment_index: idx
+          }
+        });
+        const exc = (data.session || {}).exception_result || {};
+        const kept_segments = exc.kept_segments || [];
+        const changed_segments = exc.changed_segments || [];
+        const budget_delta = exc.budget_delta || 0;
+        const time_delta = exc.time_delta || 0;
+        const needs_user_confirm = exc.needs_user_confirm === true;
+        rescueResultHTML = `
+          <div class="segment">
+            <b>局部修改结果</b>
+            <p>${esc(exc.reason || "已尝试替换问题节点")}</p>
+            <span class="tag good">保留 ${kept_segments.length} 段</span>
+            <span class="tag warn">调整 ${changed_segments.length} 段</span>
+            <span class="tag">预算变化 ${budget_delta}</span>
+            <span class="tag">时间变化 ${time_delta} 分钟</span>
+            ${needs_user_confirm ? `<span class="tag warn">需你确认</span>` : ""}
+          </div>`;
+        session = data.session || session;
+        render();
+        openActionDrawer("change");
+      } catch (e) { alert(e.message || "局部修改失败"); }
+    }
+    function supportHTML() {
+      return `
+        <section class="panel">
+          <h2>Mock 客服页</h2>
+          <p>仅生成本地说明和建议动作，不连接外部客服系统。</p>
+          <button onclick="createSupport()">创建 Mock 帮助单</button>
+          <div id="supportBox"></div>
+        </section>
+      `;
+    }
+    async function createSupport(issue = "merchant_full", note = "") {
+      try {
+        const data = await post("/support/create", {issue_type: issue, source: "execution_page", message: note});
+        const sc = data.support_case || {};
+        const supportBox = document.getElementById("supportBox");
+        if (supportBox) supportBox.innerHTML = `<div class="segment"><b>${esc(sc.title || "Mock 帮助单")}</b><p>${esc(sc.summary || sc.message || "已生成本地处理建议")}</p></div>`;
+        rescueResultHTML = `<div class="segment"><b>${esc(sc.title || "Mock 帮助单")}</b><p>${esc(sc.summary || sc.message || "已生成本地处理建议")}</p></div>`;
+        render();
+        if (supportBox) openActionDrawer("support");
+      } catch (e) { alert(e.message); }
+    }
+    function updateSide() {
+      const req = session.request || {};
+      const frame = req.intent_frame || {};
+      document.getElementById("sideGoal").textContent = req.goal_summary || frame.goal_summary || "还没开始";
+      document.getElementById("sideStage").textContent = {
+        input: "等待输入",
+        clarify: "确认缺口",
+        candidates: "比较候选",
+        selected: "朋友确认或直接预约",
+        booking: "预约抽屉",
+        execution: "执行中"
+      }[stage] || stage;
+      const fields = frame.confirmed_fields || {};
+      const sources = frame.field_sources || {};
+      const pieces = [];
+      if (TRUSTED_SOURCES.has(sources.party_size) && fields.party_size) pieces.push(fields.party_size + "人");
+      if (TRUSTED_SOURCES.has(sources.start_time) && fields.start_time) pieces.push(fields.start_time);
+      if (TRUSTED_SOURCES.has(sources.home_area) && fields.home_area) pieces.push(fields.home_area);
+      if (TRUSTED_SOURCES.has(sources.budget_per_person) && fields.budget_per_person) pieces.push("¥" + fields.budget_per_person + "/人");
+      document.getElementById("sideConfirmed").textContent = pieces.join("、") || "暂无";
+      document.getElementById("sideNext").textContent = {
+        input: "输入一句真实需求",
+        clarify: "补齐必填信息",
+        candidates: "选 Plan A 或 Plan B，也可以发给朋友共选",
+        selected: "朋友确认后，打开预约抽屉",
+        booking: "最终确认并预约",
+        execution: "按现场变化处理账单、加购和救援"
+      }[stage] || "继续";
+    }
+    function toggleJudgeMode() {
+      document.getElementById("judgeLog").classList.toggle("open");
+    }
+    async function resetFlow() {
+      try { await post("/reset", {}); } catch (e) {}
+      session = {}; selectedPlanIndex = null; voteRoom = null; rescueResultHTML = ""; friendOutcomeHTML = ""; otherIssueOpen = false; stage = "input";
+      closeBookingDrawer();
+      closeAddonModal();
+      render();
+    }
+    render();
+  </script>
+  <style>
+    /* Phase 2C itinerary-loop override */
+    .shell.phase2c { width: min(1180px, calc(100vw - 24px)); grid-template-columns: minmax(500px, 620px) minmax(260px, 340px); gap: 16px; }
+    .phase2c .phone { height: 920px; border-radius: 36px; }
+    .phase2c .side { opacity: .86; }
+    .phase2c .side h1 { font-size: 20px; }
+    .phase2c .stepper { display: none !important; }
+    .phase2c .phone-top { padding: 16px 20px 10px; background: var(--mt-yellow); border-bottom: 1px solid #f2b700; }
+    .phase2c .phone-top .hero { display: none; }
+    .phase2c .phone-top .brand small,
+    .phase2c .phone-top .brand a { color: #5a4a00; }
+    .phase2c .content { padding: 0; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+    .phase2c #mainView { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+    .chat-stream { display: grid; gap: 12px; }
+    .phase2c-conversation { flex: 1; min-height: 0; padding: 16px; overflow: auto; align-content: start; }
+    .phase2c-home { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .message-list { flex: 1; min-height: 0; overflow: auto; display: grid; align-content: start; gap: 10px; padding: 16px; }
+    .bubble { max-width: 96%; border: 1px solid var(--line); border-radius: 14px; padding: 13px; background: #fff; }
+    .bubble.user { justify-self: end; background: #fff7cc; border-color: #ffe27a; }
+    .bubble.agent { justify-self: start; background: #fff; }
+    .bubble h2, .bubble h3 { margin: 0 0 10px; font-size: 16px; }
+    .hero-copy { font-weight: 900; font-size: 20px; line-height: 1.35; margin: 0; }
+    .home-composer { border-top: 0; padding: 12px 16px 14px; background: #fff; }
+    .template-grid { display: grid; grid-template-columns: 1fr; gap: 7px; margin: 8px 0 10px; }
+    .template-grid .chip { text-align: left; font-size: 11px; line-height: 1.35; padding: 7px 8px; }
+    .composer-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: stretch; }
+    .composer-row textarea { min-height: 72px; max-height: 96px; resize: none; }
+    .composer-row .primary { min-width: 92px; }
+    .context-row { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+    .context-row label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    .context-row select { width: 150px; border: 1px solid #d8dde6; border-radius: 8px; padding: 8px 10px; font: inherit; }
+    .loading-words { font-weight: 800; }
+    .segment-bubble { display: grid; gap: 10px; }
+    .segment-options { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .store-card { position: relative; border: 1px solid #dfe3ea; border-radius: 10px; background: #fff; padding: 10px 78px 10px 10px; display: grid; grid-template-columns: 70px 1fr; gap: 10px; min-height: 118px; }
+    .store-card.selected { border: 2px solid #191919; }
+    .store-img { width: 70px; height: 70px; border-radius: 8px; background: #f4f5f7; display: grid; place-items: center; font-size: 28px; cursor: pointer; }
+    .store-main { min-width: 0; }
+    .store-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+    .store-title button.linkish { border: 0; padding: 0; background: transparent; font-weight: 900; text-align: left; line-height: 1.25; }
+    .score { color: #f59e0b; font-size: 12px; white-space: nowrap; font-weight: 900; }
+    .quote { margin: 6px 0; padding: 6px 8px; background: #fff8d7; color: #6b5300; border-radius: 6px; font-size: 12px; line-height: 1.35; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .info-cell { background: #f7f8fa; border-radius: 6px; padding: 6px; font-size: 11px; color: #4b5563; }
+    .info-cell b { display: block; color: #111827; font-size: 12px; margin-top: 1px; }
+    .replace-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; padding: 6px 8px; }
+    .segment-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .vote-panel { border: 1px solid #dbeafe; background: #eff6ff; border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
+    .booking-form { display: grid; gap: 8px; }
+    .booking-row { display: grid; grid-template-columns: 104px 1fr; gap: 8px; align-items: center; }
+    .booking-row input, .booking-row textarea { width: 100%; border: 1px solid #d8dde6; border-radius: 8px; padding: 8px; font: inherit; }
+    .flow-block { border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 12px; margin-bottom: 10px; }
+    .flow-block.current { border-color: #191919; background: #fff9d7; }
+    .flow-block.done { background: #f3f4f6; color: #6b7280; }
+    .flow-block.future { background: #fafafa; color: #6b7280; }
+    .flow-block h3 { margin: 0 0 8px; font-size: 15px; }
+    .phase2c .panel { min-height: min-content; padding-bottom: 92px; }
+    .transport-options { display: grid; gap: 7px; }
+    .transport-option { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; background: #f8fafc; border-radius: 8px; padding: 8px; }
+    .tip-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(180px, 1fr); overflow-x: auto; gap: 8px; padding-bottom: 4px; }
+    .tip-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: #fff; }
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; position: sticky; bottom: 0; background: #fff; padding-top: 8px; }
+    .mini-drawer { position: absolute; left: 14px; right: 14px; bottom: 14px; max-height: 72%; overflow: auto; border: 1px solid #d8dde6; border-radius: 18px; background: #fff; box-shadow: var(--shadow); padding: 14px; z-index: 20; }
+    .mini-drawer h2 { margin: 0 0 10px; font-size: 19px; }
+    .phase2c button.primary,
+    .phase2c .primary { background: var(--mt-yellow); border-color: var(--mt-yellow); color: #191919; font-weight: 900; }
+    .phase2c button.danger,
+    .phase2c .danger { background: #fff7f7; border-color: #ff6b6b; color: #d92d20; }
+    .booking-extra { display: grid; gap: 8px; margin: 8px 0; padding: 10px; border: 1px dashed #d8dde6; border-radius: 10px; background: #fbfcff; }
+    .mini-select-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mini-select-grid button.selected { background: var(--mt-yellow); border-color: var(--mt-yellow); font-weight: 900; }
+    .qty-row { display: grid; grid-template-columns: 1fr 74px auto; gap: 8px; align-items: center; }
+    .taxi-status { border: 1px solid #ffe27a; background: #fff9d7; border-radius: 10px; padding: 10px; display: grid; gap: 8px; margin-top: 8px; }
+    .split-note { margin-top: 8px; padding: 8px; border-radius: 8px; background: #f6f7f9; color: #4b5563; }
+    @media (max-width: 980px) {
+      .shell.phase2c { grid-template-columns: 1fr; }
+      .phase2c .side { display: none; }
+    }
+  </style>
+  <script>
+    // Phase 2C itinerary-loop override. Keeps existing backend and replaces visible user flow.
+    document.querySelector(".shell")?.classList.add("phase2c");
+    let phase2cChoices = {};
+    let phase2cVotes = {};
+    let phase2cBookings = {};
+    let phase2cMerchantCache = null;
+    let phase2cExecutionIndex = 0;
+    let phase2cDrawer = "";
+    let phase2cBill = {items: [], included: {}, total: 0, perPerson: 0};
+    let phase2cTaxi = {};
+    let phase2cPayments = {};
+    let phase2cCoupons = {};
+    let phase2cProductState = {};
+    let phase2cBusyTimer = null;
+    let phase2cMessages = [];
+
+    function ensurePhase2cIntro() {
+      return;
+    }
+
+    function pushPhase2cMessage(role, text) {
+      const clean = String(text || "").trim();
+      if (!clean) return;
+      phase2cMessages.push({role, text: clean});
+      if (phase2cMessages.length > 18) phase2cMessages = phase2cMessages.slice(-18);
+    }
+
+    function phase2cMessageHTML(message) {
+      return `<div class="bubble ${message.role === "user" ? "user" : "agent"}">${esc(message.text)}</div>`;
+    }
+
+    function phase2cMessagesHTML() {
+      return phase2cMessages.map(phase2cMessageHTML).join("");
+    }
+
+    function phase2cConversationHTML(extra = "") {
+      return `<div class="chat-stream phase2c-conversation">${phase2cMessagesHTML()}${extra}</div>`;
+    }
+
+    function summarizeAnswersForChat(answers) {
+      const labels = {
+        party_size: "人数",
+        budget_per_person: "预算",
+        start_time: "时间",
+        duration_minutes: "时长",
+        window_hours: "时长",
+        home_area: "位置",
+        cuisine_preference: "想吃",
+        script_style: "剧本类型",
+        dine_mode: "吃饭方式"
+      };
+      return Object.entries(answers || {})
+        .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
+        .map(([key, value]) => `${labels[key] || key}：${Array.isArray(value) ? value.join("、") : value}`)
+        .join("；");
+    }
+
+    const PHASE2C_EXAMPLES = [
+      "我和 3 个朋友今晚 19:00 想在新街口到店吃饭，人均 150，想少排队，菜系都可以。",
+      "4 个人今晚 19:00 想在江宁玩欢乐本，能玩 4 小时，人均 150，公共交通。",
+      "我和女朋友 18:00 在仙林约会，人均 300，想看电影也想拍照，不想太累。",
+      "今晚宅家，2 个人，预算 100，想点外卖和零食，不想出门。"
+    ];
+
+    function setBusy(message = "") {
+      const layer = document.getElementById("busyLayer");
+      const msg = document.getElementById("busyMessage");
+      if (!layer) return;
+      clearInterval(phase2cBusyTimer);
+      phase2cBusyTimer = null;
+      if (!message) {
+        layer.classList.remove("open");
+        return;
+      }
+      const words = ["正在识别…", "正在安排…", "正在构思…"];
+      let idx = 0;
+      msg.innerHTML = `<span class="loading-words">${words[idx]}</span>`;
+      layer.classList.add("open");
+      phase2cBusyTimer = setInterval(() => {
+        idx = (idx + 1) % words.length;
+        msg.innerHTML = `<span class="loading-words">${words[idx]}</span>`;
+      }, 850);
+    }
+
+    async function post(path, body = {}, busyMessage = "正在处理…") {
+      if (busyMessage) setBusy(busyMessage);
+      try {
+        const res = await fetch(API + path, {
+          method: "POST",
+          headers: {"Content-Type": "application/json", "X-Session-Id": sessionId},
+          body: JSON.stringify({session_id: sessionId, ...body})
+        });
+        const data = await res.json();
+        if (!data.ok && (data.error || data.message)) throw new Error(data.error || data.message);
+        if (data.session) session = data.session;
+        appendLog(path + " -> " + JSON.stringify(data).slice(0, 1800));
+        return data;
+      } finally {
+        setBusy("");
+      }
+    }
+
+    function renderStepper() {
+      const el = document.getElementById("stepper");
+      if (el) { el.innerHTML = ""; el.classList.add("hidden"); }
+    }
+
+    function render() {
+      renderStepper();
+      updateSide();
+      const view = document.getElementById("mainView");
+      if (stage === "input") view.innerHTML = inputHTML();
+      else if (stage === "clarify") view.innerHTML = clarifyHTML();
+      else if (stage === "candidates") view.innerHTML = candidatesHTML();
+      else if (stage === "booking" || stage === "selected") view.innerHTML = bookingPageHTML();
+      else view.innerHTML = executionHTML();
+    }
+
+    function renderKeepingScroll() {
+      const selectors = [".phase2c-conversation", ".message-list", "#mainView", ".content"];
+      const positions = selectors.map(sel => {
+        const el = document.querySelector(sel);
+        return [sel, el ? el.scrollTop : 0];
+      });
+      render();
+      requestAnimationFrame(() => {
+        positions.forEach(([sel, top]) => {
+          const el = document.querySelector(sel);
+          if (el) el.scrollTop = top;
+        });
+      });
+    }
+
+    function inputHTML() {
+      return `
+        <div class="phase2c-home">
+          <div class="message-list">
+            ${phase2cMessagesHTML()}
+          </div>
+          <div class="home-composer">
+            <h2>你想怎么玩？</h2>
+            <div class="context-row">
+              <div>
+                <label>我现在在哪</label>
+                <select id="currentArea">
+                  <option value="">不指定</option>
+                  ${AREA_OPTIONS.map(area => `<option value="${esc(area)}">${esc(area)}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+            <div class="template-grid">
+              ${PHASE2C_EXAMPLES.map((x, i) => `<button class="chip" onclick="fillPhase2cExample(${i})">${esc(x)}</button>`).join("")}
+            </div>
+            <div class="composer-row">
+              <textarea id="requestText" placeholder="比如：我和 3 个朋友今晚 19:00 想在新街口到店吃饭，人均 150，想少排队，菜系都可以。"></textarea>
+              <button class="primary" onclick="planFromInput()">${plans().length ? "重新规划" : "帮我安排"}</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function fillPhase2cExample(i) {
+      const input = document.getElementById("requestText");
+      if (input) input.value = PHASE2C_EXAMPLES[i] || "";
+    }
+
+    async function planFromInput() {
+      const text = document.getElementById("requestText")?.value.trim();
+      if (!text) return alert("先说一句你想怎么玩。");
+      try {
+        phase2cMessages = [];
+        pushPhase2cMessage("user", text);
+        phase2cChoices = {};
+        phase2cVotes = {};
+        phase2cBookings = {};
+        phase2cExecutionIndex = 0;
+        phase2cDrawer = "";
+        phase2cTaxi = {};
+        phase2cPayments = {};
+        phase2cCoupons = {};
+        phase2cProductState = {};
+        phase2cBill = {items: [], included: {}, total: 0, perPerson: 0};
+        const area = document.getElementById("currentArea")?.value || "";
+        const planning_context = {};
+        if (area) planning_context.home_area = area;
+        const data = await post("/plan", {text, planning_context}, "正在识别…");
+        session = data.session || {};
+        if ((session.mode === "needs_clarification") || ((session.request || {}).missing_fields || []).length) {
+          pushPhase2cMessage("agent", "我先确认几个缺口，避免排出来不合适。");
+          stage = "clarify";
+        } else {
+          pushPhase2cMessage("agent", "我按每段行程放了 Plan A / Plan B，你可以逐段选。");
+          stage = "candidates";
+        }
+        await loadPhase2cMerchants();
+        render();
+      } catch (e) { alert(e.message); }
+    }
+
+    function clarifyHTML() {
+      const req = session.request || {};
+      const qs = req.clarifications_needed || session.clarifications_needed || [];
+      return phase2cConversationHTML(`
+          <div class="bubble agent">
+            <h2>还差这些信息</h2>
+            ${qs.length ? qs.map(questionHTML).join("") : `<textarea id="freeformAnswer" placeholder="补一句：时间、人数、预算、区域都可以写在这里"></textarea>`}
+            <button class="primary" onclick="submitClarify()">确认，开始找店</button>
+          </div>`);
+    }
+
+    function questionHTML(q) {
+      const title = (q.key === "duration_minutes" || q.key === "window_hours") ? "想玩多久？" : (q.question || q.label || q.key);
+      const customCuisine = q.key === "cuisine_preference" || String(title).includes("吃哪类");
+      if (q.key === "start_time") {
+        return `<div class="question" data-key="${esc(q.key)}" data-multi="false"><div class="question-title">${esc(title)}</div><input type="time" oninput="setFreeAnswer(this)"></div>`;
+      }
+      if (q.key === "home_area") {
+        return `<div class="question" data-key="${esc(q.key)}" data-multi="false"><div class="question-title">${esc(title)}</div><select onchange="setFreeAnswer(this)"><option value="">选择区域</option>${AREA_OPTIONS.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join("")}</select></div>`;
+      }
+      const options = (q.options || []).filter(o => !isPastTime(q.key, o.value || o.label));
+      const multi = q.multi === true || q.type === "multi_chip";
+      return `
+        <div class="question" data-key="${esc(q.key)}" data-multi="${multi ? "true" : "false"}">
+          <div class="question-title">${esc(title)}${multi ? "（可多选）" : ""}</div>
+          <div class="chips">${options.map(o => `<button class="chip" data-value="${esc(o.value)}" onclick="chooseAnswer(this)">${esc(o.label)}</button>`).join("")}</div>
+          ${customCuisine ? `<input class="inline-input" style="margin-top:10px" placeholder="自己写：比如云南菜、日料、东北菜" oninput="setFreeAnswer(this)">` : ""}
+        </div>`;
+    }
+
+    async function submitClarify() {
+      const answers = {};
+      document.querySelectorAll(".question[data-key]").forEach(box => {
+        if (!box.dataset.value) return;
+        if (box.dataset.multi === "true") {
+          try {
+            answers[box.dataset.key] = JSON.parse(box.dataset.value).map(v => normalizeAnswer(box.dataset.key, v));
+          } catch (e) {
+            answers[box.dataset.key] = normalizeAnswer(box.dataset.key, box.dataset.value);
+          }
+        } else {
+          answers[box.dataset.key] = normalizeAnswer(box.dataset.key, box.dataset.value);
+        }
+      });
+      const free = document.getElementById("freeformAnswer");
+      if (free?.value.trim()) answers.freeform = free.value.trim();
+      const summary = summarizeAnswersForChat(answers);
+      if (summary) pushPhase2cMessage("user", summary);
+      try {
+        clearDownstreamState("clarification");
+        const data = await post("/clarify", {answers}, "正在按你补充的信息重新找店和排时间线。");
+        session = data.session || {};
+        if (plans().length) {
+          pushPhase2cMessage("agent", "收到，我把候选按行程段排好了。");
+          stage = "candidates";
+        } else {
+          pushPhase2cMessage("agent", "还有一两个关键点需要再确认。");
+          stage = (session.mode === "needs_clarification") ? "clarify" : "candidates";
+        }
+        render();
+      } catch (e) { alert(e.message); }
+    }
+
+    function businessSteps(plan) {
+      const steps = plan?.steps || [];
+      return steps.filter(s => !["travel", "transit"].includes(s.kind)).map(normalizeBusinessStep);
+    }
+
+    function normalizeBusinessStep(s) {
+      const out = {...(s || {})};
+      out.id = out.id || out.merchant_id || out.selected_merchant;
+      out.merchant_id = out.merchant_id || out.id || out.selected_merchant;
+      out.name = out.name || out.title || out.merchant_name || "待定商户";
+      out.price = Number(out.price ?? out.cost ?? 0);
+      out.cost = Number(out.cost ?? out.price ?? 0);
+      out.tags = out.tags || out.review_tags || out.features || [];
+      out.features = out.features || out.tags || [];
+      out.image = out.image || emojiForCategory(out.category);
+      out.open = out.open || "10:00";
+      out.close = out.close || "22:00";
+      out.review_snippet = out.review_snippet || "本地 Mock 候选，适合当前条件。";
+      return out;
+    }
+
+    function candidateSegments() {
+      const ps = plans();
+      const count = Math.max(...ps.map(p => businessSteps(p).length), 0);
+      return Array.from({length: count}, (_, i) => i);
+    }
+
+    function segmentOption(segmentIndex, planIndex) {
+      const p = plans()[planIndex] || plans()[0] || {};
+      const step = businessSteps(p)[segmentIndex];
+      if (step) return localizeSegmentOption(normalizeBusinessStep(step), segmentIndex, planIndex);
+      return null;
+    }
+
+    function anchorAreaForSegment(segmentIndex, fallback = {}) {
+      const req = session.request || {};
+      const frame = req.intent_frame || {};
+      const fields = frame.confirmed_fields || {};
+      return fields.home_area || req.home_area || req.origin_area || fallback.area || "";
+    }
+
+    function localizeSegmentOption(step, segmentIndex, planIndex) {
+      const anchor = anchorAreaForSegment(segmentIndex, step);
+      if (!anchor || !step?.area || step.area === anchor || step.area === "线上" || !phase2cMerchantCache?.length) return step;
+      const primary = businessSteps(plans()[0] || {})[segmentIndex] || {};
+      const sameArea = phase2cMerchantCache.filter(m =>
+        m.category === step.category &&
+        m.area === anchor &&
+        m.id !== step.id &&
+        m.id !== (primary.id || primary.merchant_id)
+      );
+      if (!sameArea.length) return step;
+      const picked = sameArea[(segmentIndex + planIndex) % sameArea.length];
+      return merchantToStep(picked, step);
+    }
+
+    function candidatesHTML() {
+      const req = session.request || {};
+      const indices = candidateSegments();
+      if (!indices.length) return `<div class="bubble agent"><h2>暂时没有合适方案</h2><p>可以放宽预算、区域或时间后再试。</p></div>`;
+      return phase2cConversationHTML(indices.map(i => segmentBubbleHTML(i)).join(""));
+    }
+
+    function segmentBubbleHTML(i) {
+      const a = phase2cChoices[i]?.A || segmentOption(i, 0);
+      const b = phase2cChoices[i]?.B || segmentOption(i, 1) || a;
+      const chosen = phase2cChoices[i]?.chosen;
+      const group = Number((session.request || {}).party_size || 1) > 1;
+      const title = `${i + 1}. ${segmentLabel(a || b)}`;
+      return `
+        <div class="bubble agent segment-bubble" data-segment-index="${i}">
+          <h2>${esc(title)}</h2>
+          <div class="segment-options">
+            ${storeCardHTML(a, "A", i, chosen === "A")}
+            ${storeCardHTML(b, "B", i, chosen === "B")}
+          </div>
+          ${votePanelHTML(i)}
+          <div class="segment-actions">
+            <button class="primary" onclick="confirmSegmentChoice(${i}, 'A')">确认方案A</button>
+            <button class="primary" onclick="confirmSegmentChoice(${i}, 'B')">确认方案B</button>
+            ${group ? `<button onclick="askFriends(${i})">问问朋友</button>` : ""}
+          </div>
+        </div>`;
+    }
+
+    function storeCardHTML(step, label, segmentIndex, selected = false, compact = false) {
+      step = normalizeBusinessStep(step || {});
+      const detailId = step.id || step.merchant_id || step.name || "";
+      const tags = (step.features || step.tags || []).slice(0, 2).join("、") || step.category || "特色";
+      const delivery = isDeliveryStep(step);
+      const displayTags = delivery && prefersPinhaofan(step) ? `美团拼好饭、${tags}` : tags;
+      const distance = delivery ? "美团外卖" : distanceText(step.area);
+      const deliveryFee = Math.max(3, Math.round(Number(step.price || step.cost || 60) / 20));
+      if (compact) {
+        return `<div class="store-card ${selected ? "selected" : ""}" onclick="selfVote(${segmentIndex}, '${label}')"><div class="store-img">${esc(step.image)}</div><div><div class="store-title"><b>${esc(step.name)}</b><span class="score">★ ${esc(step.rating || "4.7")}</span></div><p>票数：${(phase2cVotes[segmentIndex]?.[label] || 0)}</p><button class="replace-btn" onclick="event.stopPropagation(); replaceSegmentOption(${segmentIndex}, '${label}')">换一换</button></div></div>`;
+      }
+      return `
+        <div class="store-card ${selected ? "selected" : ""}">
+          <div class="store-img" onclick="openPhase2cMerchantDetail(${jsArg(detailId)})">${esc(step.image)}</div>
+          <div class="store-main">
+            <div class="store-title">
+              <button class="linkish" onclick="openPhase2cMerchantDetail(${jsArg(detailId)})">${esc(step.name)}</button>
+              <span class="score">★ ${esc(step.rating || "4.7")}</span>
+            </div>
+            <div class="quote">${esc(step.review_snippet)}</div>
+            <div class="info-grid">
+              <div class="info-cell">营业时间<b>${esc(step.open)}-${esc(step.close)}</b></div>
+              <div class="info-cell">${delivery ? "服务" : "距离"}<b>${esc(distance)}</b></div>
+              <div class="info-cell">${delivery ? "配送费" : "人均"}<b>${delivery ? `¥${deliveryFee}` : money(step.price || step.cost)}</b></div>
+              <div class="info-cell">特色<b>${esc(displayTags)}</b></div>
+            </div>
+          </div>
+          <button class="replace-btn" onclick="replaceSegmentOption(${segmentIndex}, '${label}')">换一换</button>
+        </div>`;
+    }
+
+    function votePanelHTML(i) {
+      if (!phase2cVotes[i]) return "";
+      const a = phase2cChoices[i]?.A || segmentOption(i, 0);
+      const b = phase2cChoices[i]?.B || segmentOption(i, 1) || a;
+      return `
+        <div class="vote-panel">
+          <b>分享链接已复制</b>
+          <p>朋友可以看两张卡后投票，最后仍由发起人确认。</p>
+          <div class="segment-options">
+            ${storeCardHTML(a, "A", i, false, true)}
+            ${storeCardHTML(b, "B", i, false, true)}
+          </div>
+          <button onclick="simulateFriendVote(${i})">模拟朋友选择</button>
+        </div>`;
+    }
+
+    async function loadPhase2cMerchants() {
+      if (phase2cMerchantCache) return phase2cMerchantCache;
+      try {
+        const res = await fetch("/merchants", {headers: {"X-Session-Id": sessionId}});
+        const data = await res.json();
+        phase2cMerchantCache = data.data || [];
+      } catch (e) {
+        phase2cMerchantCache = [];
+      }
+      return phase2cMerchantCache;
+    }
+
+    async function replaceSegmentOption(i, label) {
+      const merchants = await loadPhase2cMerchants();
+      const current = phase2cChoices[i]?.[label] || segmentOption(i, label === "A" ? 0 : 1);
+      const anchor = anchorAreaForSegment(i, current);
+      const categoryPool = merchants.filter(m =>
+        m.category === current.category &&
+        m.id !== current.id
+      );
+      const sameAnchor = categoryPool.filter(m => anchor && m.area === anchor);
+      const sameCurrent = categoryPool.filter(m => current.area && m.area === current.area);
+      const pool = sameAnchor.length ? sameAnchor : (sameCurrent.length ? sameCurrent : categoryPool);
+      const next = pool[(Date.now() + i + label.charCodeAt(0)) % Math.max(1, pool.length)] || current;
+      phase2cChoices[i] = {...(phase2cChoices[i] || {}), [label]: merchantToStep(next, current)};
+      renderKeepingScroll();
+    }
+
+    function merchantToStep(m, base = {}) {
+      return normalizeBusinessStep({
+        ...base,
+        id: m.id,
+        merchant_id: m.id,
+        name: m.name,
+        category: m.category,
+        area: m.area,
+        cost: m.price,
+        price: m.price,
+        rating: m.rating,
+        review_count: m.review_count,
+        review_snippet: m.review_snippet,
+        tags: m.review_tags || m.features || [],
+        features: m.features || m.review_tags || [],
+        open: m.open,
+        close: m.close,
+        image: m.image,
+        duration_minutes: m.duration_minutes,
+        can_reserve: m.can_reserve,
+        queue_minutes: m.queue_minutes,
+        group_deal: m.group_deal,
+        coupons: m.coupons || [],
+        kind: base.kind || roleKind(m.slot_role),
+        slot_role: m.slot_role || base.slot_role,
+        start: base.start,
+        end: base.end
+      });
+    }
+
+    function roleKind(role) {
+      return {PLAY: "activity", EAT: "restaurant", ADDON: "addon", STAYIN: "delivery"}[role] || "activity";
+    }
+
+    function isDeliveryStep(step = {}) {
+      const category = String(step.category || "");
+      const kind = String(step.kind || "");
+      const role = String(step.role || step.slot_role || "");
+      return kind === "delivery" || role === "STAYIN" || category.includes("外卖") || category.includes("零食");
+    }
+
+    function isDeliveryOnlyPlan(plan = mainPlan()) {
+      const segs = businessSteps(plan);
+      return segs.length > 0 && segs.every(isDeliveryStep);
+    }
+
+    function deliveryStepsFromPlan(plan = mainPlan()) {
+      return businessSteps(plan).filter(isDeliveryStep);
+    }
+
+    function requestText() {
+      return String((session.request || {}).raw_text || phase2cMessages.find(m => m.role === "user")?.text || "");
+    }
+
+    function actualPartySize() {
+      const req = session.request || {};
+      const text = requestText();
+      const hasNumericPeople = /\d+\s*(个|人|位)/.test(text);
+      if (!hasNumericPeople && /我和(女朋友|男朋友|对象|老婆|老公)|情侣|约会|二人世界/.test(text)) return 2;
+      const n = Number(req.party_size || req.people || 0);
+      if (Number.isFinite(n) && n > 0) return n;
+      return 1;
+    }
+
+    function isRomanticOccasion() {
+      const req = session.request || {};
+      const text = requestText();
+      const tags = [
+        ...(req.intent_tags || []),
+        ...(req.preferences || []),
+        req.primary_intent,
+        req.occasion
+      ].filter(Boolean).join(" ");
+      return /生日|约会|纪念日|女朋友|男朋友|对象|情侣|仪式感/.test(`${text} ${tags}`);
+    }
+
+    function bookingKind(seg = {}) {
+      const cat = String(seg.category || seg.role || seg.slot_role || "");
+      const name = String(seg.merchant_name || seg.name || "");
+      if (/剧本|推理|欢乐本|恐怖本/.test(cat + name)) return "script";
+      if (/电影院|电影|影院/.test(cat + name)) return "cinema";
+      if (/KTV|唱歌/.test(cat + name)) return "ktv";
+      if (/奶茶|咖啡|饮品/.test(cat + name)) return "drink";
+      if (/外卖|闪购|零食|小象/.test(cat + name)) return "delivery";
+      return "restaurant";
+    }
+
+    function scriptOptionsFor(seg = {}) {
+      const tables = seg.open_tables || seg.slots || [];
+      const fromData = tables.map((t, idx) => ({
+        label: `${t.script_name || t.name || `剧本${idx + 1}`} · ${t.style || t.type || "盒装本"} · ${t.required_players || t.players || actualPartySize()}人 · ${Math.round((t.duration_minutes || seg.duration_minutes || 240) / 60)}h`,
+        value: t.script_name || t.name || `script_${idx + 1}`
+      }));
+      return fromData.length ? fromData : [
+        {label: "《欢乐时光》 · 欢乐本 · 6人 · 4h", value: "欢乐时光"},
+        {label: "《鬼校》 · 恐怖本 · 7人 · 5h", value: "鬼校"},
+        {label: "《消失的合伙人》 · 推理本 · 5人 · 4h", value: "消失的合伙人"}
+      ];
+    }
+
+    function movieOptionsFor() {
+      return [
+        {label: "《周末大冒险》 18:30 场", value: "周末大冒险"},
+        {label: "《夏夜来信》 19:10 场", value: "夏夜来信"},
+        {label: "《重启星期六》 20:00 场", value: "重启星期六"}
+      ];
+    }
+
+    function roomForParty() {
+      const p = actualPartySize();
+      if (p <= 2) return "小包";
+      if (p <= 5) return "中包";
+      return "大包";
+    }
+
+    function drinkDefaults() {
+      const prefs = (session.request || {}).drink_preferences || {};
+      const flags = (session.request || {}).safety_flags || [];
+      return {
+        sugar: prefs.sugar_level || (flags.includes("not_too_sweet") ? "少糖" : "正常糖"),
+        ice: prefs.hot_required ? "热饮" : (flags.includes("cannot_ice") ? "常温" : (prefs.ice_level || "少冰"))
+      };
+    }
+
+    function bookingExtraFields(seg, i) {
+      const kind = bookingKind(seg);
+      if (kind === "script") {
+        return `<div class="booking-extra"><b>剧本选择</b><select id="scriptChoice${i}">${scriptOptionsFor(seg).map(o => `<option value="${esc(o.value)}">${esc(o.label)}</option>`).join("")}</select></div>`;
+      }
+      if (kind === "cinema") {
+        return `<div class="booking-extra"><b>电影选座</b><select id="movieChoice${i}">${movieOptionsFor().map(o => `<option value="${esc(o.value)}">${esc(o.label)}</option>`).join("")}</select><div class="mini-select-grid">${["5排06座", "5排07座", "6排08座", "6排09座"].map((s, idx) => `<button type="button" class="${idx < actualPartySize() ? "selected" : ""}" onclick="this.classList.toggle('selected')">${s}</button>`).join("")}</div></div>`;
+      }
+      if (kind === "ktv") {
+        const room = roomForParty();
+        return `<div class="booking-extra"><b>包间选择</b><select id="roomChoice${i}">${["小包", "中包", "大包"].map(x => `<option ${x === room ? "selected" : ""}>${x}</option>`).join("")}</select><p class="muted">已按人数预选 ${room}。</p></div>`;
+      }
+      if (kind === "drink") {
+        const d = drinkDefaults();
+        return `<div class="booking-extra"><b>商品选择</b><select id="drinkProduct${i}"><option>苹果奶绿</option><option>热红茶拿铁</option><option>低糖乌龙</option></select><div class="mini-select-grid"><input id="drinkSugar${i}" value="${esc(d.sugar)}"><input id="drinkIce${i}" value="${esc(d.ice)}"></div></div>`;
+      }
+      return "";
+    }
+
+    function isSnackMerchant(step = {}) {
+      const text = `${step.category || ""}${step.name || ""}`;
+      return /零食|闪购|小象|超市|薯片|可乐/.test(text);
+    }
+
+    function isDrinkMerchant(step = {}) {
+      const text = `${step.category || ""}${step.name || ""}`;
+      return /奶茶|咖啡|饮品|茶/.test(text);
+    }
+
+    function prefersPinhaofan(step = {}) {
+      const seed = String(step.id || step.name || "").split("").reduce((s, ch) => s + ch.charCodeAt(0), 0);
+      return isDeliveryStep(step) && !isSnackMerchant(step) && !isDrinkMerchant(step) && seed % 3 !== 1;
+    }
+
+    function deliveryProducts(step = {}) {
+      let names;
+      if (isSnackMerchant(step)) {
+        names = ["小象原味薯片", "无糖可乐", "黄油爆米花桶", "小象零食分享包"];
+      } else if (isDrinkMerchant(step)) {
+        names = ["苹果奶绿", "热红茶拿铁", "低糖乌龙茶", "柠檬茶"];
+      } else {
+        names = ["美团拼好饭单人餐", "招牌单人餐", "双人分享餐", "番茄牛肉饭"];
+      }
+      const priceBase = Math.max(12, Math.round(Number(step.price || step.cost || 60) / 3));
+      return names.map((name, index) => ({
+        name,
+        price: priceBase + index * 6,
+        note: prefersPinhaofan(step) && index === 0 ? "美团拼好饭优先" : (isSnackMerchant(step) ? "零食补给" : "可加购"),
+        pinhaofan: prefersPinhaofan(step) && index === 0
+      }));
+    }
+
+    function segmentLabel(step) {
+      const cat = step?.category || "";
+      if (cat.includes("剧本")) return "剧本杀";
+      if (["火锅", "江浙菜", "烧烤", "海鲜", "简餐", "外卖"].includes(cat)) return "吃饭";
+      if (cat.includes("电影")) return "看电影";
+      if (cat.includes("奶茶") || cat.includes("咖啡")) return "顺手加购";
+      return cat || "行程";
+    }
+
+    async function confirmSegmentChoice(i, label) {
+      const current = phase2cChoices[i] || {};
+      const step = current[label] || segmentOption(i, label === "A" ? 0 : 1);
+      phase2cChoices[i] = {...current, [label]: step, chosen: label};
+      pushPhase2cMessage("user", `第 ${i + 1} 段确认方案 ${label}：${step?.name || "候选商户"}`);
+      const all = candidateSegments().every(idx => phase2cChoices[idx]?.chosen);
+      if (!all) { renderKeepingScroll(); return; }
+      const selected = candidateSegments().map(idx => {
+        const item = phase2cChoices[idx];
+        const planLabel = item.chosen;
+        return {
+          segment_index: idx,
+          plan_index: planLabel === "B" ? 1 : 0,
+          plan_label: `Plan ${planLabel}`,
+          step: item[planLabel] || segmentOption(idx, planLabel === "B" ? 1 : 0)
+        };
+      });
+      const data = await post("/select_segments", {segments: selected}, "正在生成逐段预约单…");
+      session = data.session || session;
+      pushPhase2cMessage("agent", "所有主行程都选好了，我把预约单预填出来，你逐段确认即可。");
+      stage = "booking";
+      render();
+    }
+
+    function askFriends(i) {
+      phase2cVotes[i] = phase2cVotes[i] || {A: 0, B: 0};
+      alert("分享链接已复制");
+      pushPhase2cMessage("agent", `第 ${i + 1} 段的共选链接已复制，可以喊朋友一起挑。`);
+      renderKeepingScroll();
+    }
+    function selfVote(i, label) {
+      phase2cVotes[i] = phase2cVotes[i] || {A: 0, B: 0};
+      phase2cVotes[i][label] += 1;
+      renderKeepingScroll();
+    }
+    function simulateFriendVote(i) {
+      const party = Math.max(1, Number((session.request || {}).party_size || 4));
+      phase2cVotes[i] = {A: Math.ceil(party / 2), B: Math.floor(party / 2)};
+      pushPhase2cMessage("agent", `模拟朋友投票完成：方案 A ${phase2cVotes[i].A} 票，方案 B ${phase2cVotes[i].B} 票。`);
+      renderKeepingScroll();
+    }
+
+    function bookingPageHTML() {
+      if (isDeliveryOnlyPlan(mainPlan())) return deliveryOrderPageHTML();
+      const review = session.booking_review || {};
+      const segs = review.segments || [];
+      if (!segs.length) return `<div class="bubble agent"><h2>还没有可预约的行程</h2><button onclick="stage='candidates';render()">回去选方案</button></div>`;
+      return phase2cConversationHTML(segs.map((seg, i) => bookingBubbleHTML(seg, i)).join(""));
+    }
+
+    function deliveryOrderPageHTML() {
+      const segs = deliveryStepsFromPlan();
+      if (!segs.length) return `<div class="bubble agent"><h2>还没有可点单的外卖</h2><button onclick="stage='candidates';render()">回去选方案</button></div>`;
+      return phase2cConversationHTML(segs.map((seg, i) => deliveryOrderBubbleHTML(seg, i)).join(""));
+    }
+
+    function deliveryOrderBubbleHTML(seg, i) {
+      const confirmed = phase2cBookings[`delivery_${i}`] === true;
+      const products = deliveryProducts(seg);
+      const desired = (session.request || {}).start_time || "19:30";
+      return `
+        <div class="bubble agent">
+          <h2>${esc(seg.name || "美团外卖")}</h2>
+          <button class="linkish" onclick="openPhase2cMerchantDetail(${jsArg(seg.id || seg.merchant_id || "")})">查看商详</button>
+          <div class="booking-form">
+            <div class="booking-row"><span>希望送达时间</span><input id="deliveryTime${i}" value="${esc(desired)}"></div>
+            <div class="booking-row"><span>收货人</span><input id="deliveryName${i}" value="发起人"></div>
+            <div class="booking-row"><span>联系方式</span><input id="deliveryPhone${i}" value="13800000000"></div>
+            <div class="booking-row"><span>收货地址</span><input id="deliveryAddress${i}" value="${esc((session.request || {}).origin_area || (session.request || {}).home_area || "当前位置")} 附近 Mock 地址"></div>
+            <div class="booking-row"><span>备注</span><textarea id="deliveryNote${i}">本地 Mock 外卖点单，不会真实下单。</textarea></div>
+          </div>
+          <div class="tip-row">
+            ${products.map((p, idx) => `<div class="tip-card"><b>${esc(p.name)}</b><p>${esc(p.note)}</p><p>¥${esc(p.price)}</p><div class="qty-row"><span>份数</span><input id="deliveryQty${i}_${idx}" type="number" min="1" value="1"><button class="primary" onclick="confirmProductPurchase(${jsArg(`delivery_${i}_${idx}`)}, ${jsArg(p.name)}, ${Number(p.price)}, 'deliveryQty${i}_${idx}')">加入</button></div></div>`).join("")}
+          </div>
+          <div class="segment-actions">
+            ${confirmed ? `<button class="primary" onclick="stage='execution';phase2cExecutionIndex=0;render()">进入配送执行</button>` : `<button class="primary" onclick="confirmDeliveryOrder(${i})">确认点单</button>`}
+            <button onclick="openPhase2cMerchantDetail(${jsArg(seg.id || seg.merchant_id || "")})">查看商详</button>
+            <button class="danger" onclick="stage='candidates';render()">取消</button>
+          </div>
+        </div>`;
+    }
+
+    function confirmDeliveryOrder(i) {
+      const seg = deliveryStepsFromPlan()[i] || {};
+      phase2cBookings[`delivery_${i}`] = true;
+      const all = deliveryStepsFromPlan().every((_, idx) => phase2cBookings[`delivery_${idx}`] === true);
+      if (all) {
+        pushPhase2cMessage("agent", "外卖已模拟点单，直接进入配送执行。");
+        stage = "execution";
+        phase2cExecutionIndex = 0;
+        render();
+      } else {
+        renderKeepingScroll();
+      }
+    }
+
+    function bookingBubbleHTML(seg, i) {
+      const confirmed = phase2cBookings[i] === true || seg.status === "confirmed";
+      const fields = seg.prefilled_fields || {};
+      return `
+        <div class="bubble agent">
+          <h2>${esc(seg.merchant_name || "预约单")}</h2>
+          <div class="booking-form">
+            <div class="booking-row"><span>店铺名称</span><b>${esc(seg.merchant_name || "-")}</b></div>
+            <div class="booking-row"><span>预计到店时间</span><input id="bookTime${i}" value="${esc(seg.scheduled_start || fields.scheduled_start || "19:00")}"></div>
+            <div class="booking-row"><span>预计到店人数</span><input id="bookPeople${i}" value="${esc(seg.party_size || fields.party_size || actualPartySize())}"></div>
+            <div class="booking-row"><span>联系人</span><input id="bookName${i}" value="发起人"></div>
+            <div class="booking-row"><span>联系方式</span><input id="bookPhone${i}" value="13800000000"></div>
+            ${bookingExtraFields(seg, i)}
+            <div class="booking-row"><span>特殊需求</span><textarea id="bookNote${i}">${esc(defaultBookingNote(seg))}</textarea></div>
+          </div>
+          <div class="segment-actions">
+            ${confirmed ? `<button class="primary" onclick="copyBookingShare(${i})">分享给朋友</button>` : `<button class="primary" onclick="confirmBookingSegment(${i})">确认预约</button>`}
+            <button onclick="alert('即将拨打商家号码 Mock')">咨询商家</button>
+            <button class="danger" onclick="cancelBookingSegment(${i})">取消</button>
+          </div>
+        </div>`;
+    }
+
+    function defaultBookingNote(seg) {
+      if (seg.category === "剧本杀") return "希望欢乐本/新手友好，按到店人数预留。";
+      if (seg.role === "EAT") return "少排队，尽量安排安静座位。";
+      return "本地 Mock 预约，请商家确认。";
+    }
+
+    async function confirmBookingSegment(i) {
+      phase2cBookings[i] = true;
+      pushPhase2cMessage("user", `第 ${i + 1} 段预约确认。`);
+      const segs = (session.booking_review || {}).segments || [];
+      const all = segs.every((_, idx) => phase2cBookings[idx] === true);
+      if (!all) { render(); return; }
+      const data = await post("/booking/confirm", {}, "正在确认本地 Mock 预约…");
+      session = data.session || session;
+      pushPhase2cMessage("agent", "预约完成，进入执行页。路上、到店、顺路提示和账单都在这里处理。");
+      stage = "execution";
+      phase2cExecutionIndex = 0;
+      phase2cDrawer = "";
+      render();
+    }
+    function copyBookingShare() { alert("预约信息链接已复制"); }
+    function cancelBookingSegment(i) {
+      delete phase2cChoices[i];
+      delete phase2cBookings[i];
+      stage = "candidates";
+      render();
+    }
+
+    function executionHTML() {
+      const plan = mainPlan();
+      const blocks = executionBlocks(plan);
+      phase2cBill.items = phase2cBill.items || [];
+      const deliveryOnly = isDeliveryOnlyPlan(plan);
+      const hasVisibleTip = blocks.some(b => b.type === "tip");
+      const actionButtons = [
+        (!deliveryOnly && !hasVisibleTip) ? `<button onclick="openPhase2cDrawer('addon')">顺手来一个</button>` : "",
+        !deliveryOnly ? `<button onclick="openPhase2cDrawer('change')">行程有变化？</button>` : "",
+        `<button onclick="openPhase2cDrawer('bill')">账单</button>`,
+        `<button onclick="openPhase2cDrawer('support')">联系客服</button>`
+      ].filter(Boolean).join("");
+      const actionBlock = `
+        <div class="flow-block">
+          <div class="segment-actions">
+            ${actionButtons}
+          </div>
+        </div>
+        <div class="flow-block">
+          <button class="primary" onclick="finishPhase2cTrip()">完成</button>
+        </div>`;
+      return `
+        <section class="panel">
+          <h2>执行中</h2>
+          ${blocks.map((b, i) => executionBlockHTML(b, i)).join("")}
+          ${actionBlock}
+        </section>
+        ${phase2cDrawer}`;
+    }
+
+    function executionBlocks(plan) {
+      const segs = businessSteps(plan);
+      const transits = (plan.itinerary?.transits || []);
+      const blocks = [];
+      if (segs.length && segs.every(isDeliveryStep)) {
+        segs.forEach(seg => blocks.push({type: "delivery", segment: seg}));
+        return blocks;
+      }
+      segs.forEach((seg, i) => {
+        if (isDeliveryStep(seg)) {
+          blocks.push({type: "delivery", segment: seg});
+          return;
+        }
+        const tr = transits[i] || null;
+        blocks.push({type: "transport", title: i === 0 ? "从出发地前往第一站" : "路上移动", transit: tr, from: tr?.from?.area || "出发地", to: seg.area || "下一站"});
+        blocks.push({type: "itinerary", segment: seg});
+        const tip = tipForSegment(seg);
+        if (tip) blocks.push({type: "tip", tip});
+      });
+      const ret = plan.itinerary?.return_transit;
+      if (ret && segs.some(seg => !isDeliveryStep(seg))) blocks.push({type: "transport", title: "返程", transit: ret, from: ret.from?.area || "上一站", to: ret.to?.area || "出发地"});
+      return blocks;
+    }
+
+    function executionBlockHTML(block, i) {
+      const state = i < phase2cExecutionIndex ? "done" : i === phase2cExecutionIndex ? "current" : "future";
+      if (block.type === "transport") {
+        const opts = transitOptions(block);
+        const taxi = opts.find(o => o.kind === "taxi") || opts[1];
+        const taxiState = phase2cTaxi[`tr_${i}`];
+        return `<div class="flow-block ${state}" onclick="${i < phase2cExecutionIndex ? `phase2cExecutionIndex=${i};render()` : ""}">
+          <h3>${esc(block.title)}</h3>
+          <div class="transport-options">
+            ${opts.map(o => `<div class="transport-option"><span>${esc(o.label)}：${esc(o.price)}，${esc(o.time)}</span><button onclick="event.stopPropagation();${o.kind === "taxi" ? `requestTaxi('tr_${i}', ${jsArg(JSON.stringify(o))})` : `alert('${esc(o.action)} Mock 页面')`}">${esc(o.action)}</button></div>`).join("")}
+          </div>
+          ${taxiState ? `<div class="taxi-status"><b>${taxiState.status === "confirmed" ? "美团打车已确认" : "美团打车正在为您叫车……预计 " + taxiState.eta + " 分钟"}</b>${taxiState.status === "confirmed" ? `<p>已计入打车费用 ¥${Math.round(taxiState.cost || 0)}</p>` : `<div class="segment-actions"><button class="primary" onclick="event.stopPropagation();confirmTaxi('tr_${i}')">确认上车</button><button class="danger" onclick="event.stopPropagation();cancelTaxi('tr_${i}')">取消订单</button></div>`}</div>` : ""}
+          <button class="primary" onclick="event.stopPropagation();completeExecutionBlock(${i})">${i < phase2cExecutionIndex ? "已完成" : "已完成"}</button>
+        </div>`;
+      }
+      if (block.type === "delivery") {
+        const s = block.segment || {};
+        const desired = (session.request || {}).start_time || "19:30";
+        const fee = Math.max(3, Math.round(Number(s.price || s.cost || 60) / 20));
+        return `<div class="flow-block ${state}" onclick="${i < phase2cExecutionIndex ? `phase2cExecutionIndex=${i};render()` : ""}">
+          <h3>${esc(s.name || "美团外卖")}</h3>
+          <div class="quote">实时送达位置：骑手已接单，预计 ${esc(desired)} 前后送达。</div>
+          <div class="metric-bar">
+            <div class="metric">服务<b>美团外卖</b></div>
+            <div class="metric">希望送达<b>${esc(desired)}</b></div>
+            <div class="metric">配送费<b>¥${esc(fee)}</b></div>
+            <div class="metric">品类<b>${esc(s.category || "外卖")}</b></div>
+          </div>
+          <div class="segment-actions">
+            <button onclick="event.stopPropagation();openPhase2cMerchantDetail(${jsArg(s.id || s.merchant_id || "")})">商详</button>
+            <button onclick="event.stopPropagation();openPhase2cDrawer('product',${jsArg(s.name || "外卖商品")})">商品选择</button>
+            <button onclick="event.stopPropagation();openPhase2cDrawer('support',${jsArg(s.id || "")})">联系客服</button>
+            <button class="primary" onclick="event.stopPropagation();completeExecutionBlock(${i})">确认收货</button>
+          </div>
+        </div>`;
+      }
+      if (block.type === "tip") {
+        const tips = block.tip;
+        return `<div class="flow-block ${state}"><h3>顺路提示</h3><div class="tip-row">${tips.map(t => `<div class="tip-card"><b>${esc(t.item)}</b><p onclick="openPhase2cMerchantDetail(${jsArg(t.merchant_id)})">${esc(t.store)}</p><p onclick="openPhase2cDrawer('product',${jsArg(t.name)})">${esc(t.name)} / ¥${esc(t.price)}</p></div>`).join("")}</div></div>`;
+      }
+      const s = block.segment;
+      return `<div class="flow-block ${state}" onclick="${i < phase2cExecutionIndex ? `phase2cExecutionIndex=${i};render()` : ""}">
+        <h3>${esc(s.name)}</h3>
+        <div class="metric-bar">
+          <div class="metric">营业时间<b>${esc(s.open || "10:00")}-${esc(s.close || "22:00")}</b></div>
+          <div class="metric">距离<b>${esc(distanceText(s.area))}</b></div>
+          <div class="metric">人均<b>${money(s.price || s.cost)}</b></div>
+          <div class="metric">品类<b>${esc(s.category || "本地生活")}</b></div>
+        </div>
+        <div class="segment-actions">
+          <button onclick="event.stopPropagation();openPhase2cDrawer('pay',${jsArg(s.id)})">买单</button>
+          <button onclick="event.stopPropagation();openPhase2cDrawer('coupon',${jsArg(s.id)})">购买/核验券</button>
+          <button onclick="event.stopPropagation();openPhase2cDrawer('review',${jsArg(s.id)})">评价</button>
+          <button onclick="event.stopPropagation();openPhase2cDrawer('support',${jsArg(s.id)})">联系客服</button>
+          <button class="primary" onclick="event.stopPropagation();completeExecutionBlock(${i})">已完成</button>
+        </div>
+      </div>`;
+    }
+
+    function transitOptions(block) {
+      const opts = block.transit?.options || [];
+      const pub = opts.find(o => o.mode === "public") || {duration_minutes: 28, cost: 2};
+      const taxi = opts.find(o => o.mode === "taxi") || {duration_minutes: 18, cost: 24};
+      return [
+        {kind: "public", label: "公共交通", price: `¥${pub.cost ?? 2}`, cost: Number(pub.cost ?? 2), time: `${pub.duration_minutes || 28}分钟`, duration: Number(pub.duration_minutes || 28), action: "导航"},
+        {kind: "taxi", label: "打车", price: `¥${taxi.cost ?? 24}`, cost: Number(taxi.cost ?? 24), time: `${taxi.duration_minutes || 18}分钟`, duration: Number(taxi.duration_minutes || 18), action: "打车"}
+      ];
+    }
+    function completeExecutionBlock(i) {
+      const blocks = executionBlocks(mainPlan());
+      let next = Math.max(phase2cExecutionIndex, i + 1);
+      while (blocks[next]?.type === "tip") next += 1;
+      phase2cExecutionIndex = next;
+      render();
+    }
+
+    function requestTaxi(blockId, optionJson) {
+      let option = {};
+      try { option = JSON.parse(optionJson || "{}"); } catch (e) { option = {}; }
+      phase2cTaxi[blockId] = {
+        status: "calling",
+        cost: Number(option.cost || 24),
+        eta: Math.max(2, Math.min(8, Math.round((Number(option.duration || 18) || 18) / 4)))
+      };
+      renderKeepingScroll();
+    }
+
+    function confirmTaxi(blockId) {
+      const item = phase2cTaxi[blockId] || {cost: 24, eta: 4};
+      phase2cTaxi[blockId] = {...item, status: "confirmed"};
+      upsertBillItem(`taxi_${blockId}`, "美团打车", Number(item.cost || 0), "taxi");
+      renderKeepingScroll();
+    }
+
+    function cancelTaxi(blockId) {
+      delete phase2cTaxi[blockId];
+      renderKeepingScroll();
+    }
+
+    function tipForSegment(seg) {
+      if (["restaurant", "activity"].includes(seg.kind)) {
+        if (isRomanticOccasion()) {
+          return [
+            {item: "花店送花", store: "美团鲜花速达", merchant_id: "flower_001", name: "生日玫瑰88朵", price: 188},
+            {item: "花店送花", store: "美团鲜花速达", merchant_id: "flower_002", name: "恩爱蔷薇99朵", price: 199},
+            {item: "花店送花", store: "美团鲜花速达", merchant_id: "flower_003", name: "纪念茉莉66朵", price: 166}
+          ];
+        }
+        return [
+          {item: "来杯奶茶", store: "茶小满·顺路店", merchant_id: "m_029", name: "蜜桃乌龙", price: 18},
+          {item: "小零食", store: "闪购零食补给站", merchant_id: "m_008", name: "朋友分享装", price: 29}
+        ];
+      }
+      return null;
+    }
+
+    function openPhase2cDrawer(type, id = "") {
+      if (type === "change") phase2cDrawer = changeDrawerHTML();
+      else if (type === "bill") phase2cDrawer = billDrawerHTML();
+      else if (type === "addon") phase2cDrawer = simpleDrawer("顺手来一个", `<p>这里展示当前路线附近的本地 Mock 小加购，不自动进入账单。</p><button onclick="addBillItem('顺路加购', 18);closePhase2cDrawer()">加入一杯 ¥18</button>`);
+      else if (type === "pay") phase2cDrawer = simpleDrawer("买单", `<p>输入金额，完成本地 Mock 买单。</p><input id="mockPayAmount" value="128"><button class="primary" onclick="addBillItem('买单', Number(document.getElementById('mockPayAmount').value || 0));closePhase2cDrawer()">确认买单</button>`);
+      else if (type === "coupon") phase2cDrawer = couponDrawerHTML(id);
+      else if (type === "review") phase2cDrawer = simpleDrawer("评价", `<textarea placeholder="写一句评价 Mock"></textarea><button class="primary" onclick="alert('评价已提交 Mock');closePhase2cDrawer()">提交评价</button>`);
+      else if (type === "support") phase2cDrawer = simpleDrawer("联系客服", `<p>已进入客服 Mock 页面，不连接真实客服。</p><button onclick="alert('客服工单已生成 Mock')">生成工单</button>`);
+      else if (type === "product") phase2cDrawer = simpleDrawer("商品选择", `<p>${esc(id)}，本地 Mock 商品选择。</p><button onclick="addBillItem('顺路加购', 18);closePhase2cDrawer()">购买 ¥18</button>`);
+      render();
+    }
+    function closePhase2cDrawer() { phase2cDrawer = ""; render(); }
+    function simpleDrawer(title, body) { return `<div class="mini-drawer"><div class="drawer-bar"></div><h2>${esc(title)}</h2>${body}<button onclick="closePhase2cDrawer()">关闭</button></div>`; }
+    function couponDrawerHTML(id) {
+      const m = findMerchant(id) || {};
+      const coupons = m.coupons || [{title: "到店团购券", price: 88}, {title: "满减券", price: 20}];
+      return simpleDrawer("购买/核验券", coupons.map(c => `<div class="segment"><b>${esc(c.title || c.name)}</b><p>¥${esc(c.price || c.value || 0)}</p><button onclick="addBillItem('${esc(c.title || c.name)}', ${Number(c.price || c.value || 0)});alert('已购买，二维码 Mock 已生成')">购买/核验</button></div>`).join(""));
+    }
+    function changeDrawerHTML() {
+      const segs = businessSteps(mainPlan());
+      return `<div class="mini-drawer"><div class="drawer-bar"></div><h2>行程有变化？</h2>
+        <p>您需要调整哪里？</p>
+        ${segs.map((s, i) => `<button onclick="phase2cChangeSegment=${i}">${esc(s.name)} · ${esc(s.category)}</button>`).join("")}
+        <div class="chips">
+          ${["商家满座 / 排队太久", "朋友迟到", "想改时间", "券不会用", "想退款", "想投诉", "其他问题"].map(x => `<button class="chip" onclick="mockRescue('${esc(x)}')">${esc(x)}</button>`).join("")}
+        </div>
+        <div id="rescuePreview">${rescueResultHTML || ""}</div>
+        <button class="primary" onclick="confirmPhase2cRescueBooking()">确认修改并预约</button>
+        <button onclick="closePhase2cDrawer()">取消</button>
+      </div>`;
+    }
+    function confirmPhase2cRescueBooking() {
+      alert("已根据修改理由重新生成预约 Mock");
+      closePhase2cDrawer();
+    }
+    async function mockRescue(reason) {
+      const segs = businessSteps(mainPlan());
+      const idx = window.phase2cChangeSegment || 0;
+      const type = reason.includes("迟到") || reason.includes("时间") ? "time_conflict" : (segs[idx]?.kind === "restaurant" ? "restaurant_full" : "ticket_soldout");
+      const data = await post("/exception", {type, context: {affected_segment_index: idx, location_state: "near_current_merchant", current_area: segs[idx]?.area, note: reason}}, "正在局部调整…");
+      session = data.session || session;
+      const exc = session.exception_result || data.result || {};
+      rescueResultHTML = `<div class="segment"><b>局部修改结果</b><p>${esc(exc.reason || "已根据问题调整当前段，其它段保持不动。")}</p><span class="tag good">保留其它行程</span><span class="tag warn">原因：${esc(reason)}</span></div>`;
+      phase2cDrawer = changeDrawerHTML();
+      render();
+    }
+    function billItemsFromBlocks(blocks) {
+      const items = [];
+      blocks.forEach((b, i) => {
+        if (b.type === "transport") {
+          const taxi = transitOptions(b).find(x => x.label === "打车");
+          items.push({id: `tr_${i}`, label: b.title, amount: Number(String(taxi.price).replace(/[^\d]/g, "")) || 0});
+        }
+        if (b.type === "itinerary") items.push({id: b.segment.id || `seg_${i}`, label: b.segment.name, amount: Number(b.segment.price || b.segment.cost || 0)});
+        if (b.type === "delivery") items.push({id: b.segment.id || `delivery_${i}`, label: `${b.segment.name || "美团外卖"} 点单`, amount: Number(b.segment.price || b.segment.cost || 0)});
+      });
+      return items;
+    }
+    function billDrawerHTML() {
+      const party = Math.max(1, Number((session.request || {}).party_size || 1));
+      phase2cBill.items.forEach(it => { if (phase2cBill.included[it.id] === undefined) phase2cBill.included[it.id] = true; });
+      const total = phase2cBill.items.filter(it => phase2cBill.included[it.id]).reduce((s, it) => s + Number(it.amount || 0), 0);
+      return `<div class="mini-drawer"><div class="drawer-bar"></div><h2>账单</h2>
+        ${phase2cBill.items.map(it => `<label class="booking-row"><span><input type="checkbox" ${phase2cBill.included[it.id] ? "checked" : ""} onchange="phase2cBill.included['${esc(it.id)}']=this.checked;openPhase2cDrawer('bill')"> ${esc(it.label)}</span><b>¥${Math.round(it.amount || 0)}</b></label>`).join("")}
+        <div class="booking-row"><span>总金额</span><input value="${Math.round(total)}" oninput="phase2cBill.total=Number(this.value||0)"></div>
+        <div class="booking-row"><span>单人金额</span><input value="${Math.round(total / party)}" oninput="phase2cBill.perPerson=Number(this.value||0)"></div>
+        <p>收款链接：/mock/a-money?amount=${Math.round(total)}（美团/微信支付 Mock）</p>
+        <button onclick="closePhase2cDrawer()">关闭</button>
+      </div>`;
+    }
+    function addBillItem(label, amount) {
+      const id = "manual_" + Date.now();
+      phase2cBill.items.push({id, label, amount});
+      phase2cBill.included[id] = true;
+    }
+    function finishPhase2cTrip() {
+      phase2cDrawer = simpleDrawer("美团已帮您安排妥当", `<p>您有多愿意将美团周到分享给朋友？</p><div class="chips">${Array.from({length: 11}, (_, i) => `<button onclick="ratePhase2cScore(${i})">${i}</button>`).join("")}</div>`);
+      render();
+    }
+
+    async function ratePhase2cScore(score) {
+      alert(`谢谢你的反馈：${score} 分`);
+      await resetFlow();
+      stage = "input";
+      render();
+    }
+
+    function openPhase2cMerchantDetail(id) {
+      const m = findMerchant(id);
+      if (!m && phase2cMerchantCache === null) {
+        loadPhase2cMerchants().then(() => openPhase2cMerchantDetail(id));
+        return;
+      }
+      if (!m) {
+        phase2cDrawer = simpleDrawer("商详暂未加载", `<p>这个候选来自本地 Mock 状态，当前缺少完整商详字段。你仍然可以继续选择或换一换。</p>`);
+        renderKeepingScroll();
+        return;
+      }
+      const coupons = m.coupons || [{title: "双人套餐券", price: Math.max(20, Math.round((m.price || 80) * 1.6))}, {title: "满100减20", price: 20}];
+      phase2cDrawer = `<div class="mini-drawer"><div class="drawer-bar"></div><div class="store-img" style="width:100%;height:130px;font-size:54px">${esc(m.image || emojiForCategory(m.category))}</div><h2>${esc(m.name)}</h2><p>★ ${esc(m.rating || "4.7")} · ${esc(m.area || "-")} · 营业 ${esc(m.open || "10:00")}-${esc(m.close || "22:00")} · 人均 ${money(m.price)}</p><div class="quote">${esc(m.review_snippet || "精选好评，适合当前行程。")}</div><h3>店铺券</h3>${coupons.map(c => `<div class="segment"><b>${esc(c.title || c.name)}</b><p>¥${esc(c.price || c.value || 0)} · Mock券</p></div>`).join("")}<h3>特色</h3><p>${esc((m.recommended_dishes || m.features || m.review_tags || []).join("、") || m.category)}</p><button onclick="closePhase2cDrawer()">关闭</button></div>`;
+      renderKeepingScroll();
+    }
+    function findMerchant(id) {
+      const wanted = String(id || "");
+      if (!wanted) return null;
+      const choiceSteps = Object.values(phase2cChoices || {}).flatMap(choice => [
+        choice.A, choice.B, choice.chosen ? choice[choice.chosen] : null
+      ]).filter(Boolean);
+      const bookingSteps = ((session.booking_review || {}).segments || []).map(seg => normalizeBusinessStep({
+        id: seg.merchant_id || seg.id,
+        merchant_id: seg.merchant_id || seg.id,
+        name: seg.merchant_name,
+        category: seg.category,
+        area: seg.area,
+        price: seg.price || seg.cost,
+        cost: seg.price || seg.cost,
+        open: seg.open,
+        close: seg.close,
+        image: seg.image,
+        rating: seg.rating,
+        review_snippet: seg.review_snippet
+      }));
+      const all = [
+        ...(phase2cMerchantCache || []),
+        ...businessSteps(mainPlan()),
+        ...choiceSteps,
+        ...bookingSteps
+      ];
+      return all.find(m => String(m.id || m.merchant_id || "") === wanted || String(m.name || "") === wanted) || null;
+    }
+    function emojiForCategory(cat = "") {
+      if (cat.includes("火锅")) return "🍲";
+      if (cat.includes("剧本")) return "🎭";
+      if (cat.includes("电影")) return "🎬";
+      if (cat.includes("奶茶")) return "🧋";
+      if (cat.includes("咖啡")) return "☕";
+      if (cat.includes("台球")) return "🎱";
+      if (cat.includes("按摩")) return "💆";
+      if (cat.includes("酒店")) return "🏨";
+      if (cat.includes("外卖")) return "🥡";
+      return "🏬";
+    }
+    function distanceText(area) {
+      const origin = (session.request || {}).origin_area || (session.request || {}).home_area;
+      if (!origin || !area) return "待估";
+      if (origin === area) return "同区域";
+      return `${origin} → ${area}`;
+    }
+
+    // Final micro patch overrides: confirmed-only billing, typed drawers, and robust merchant detail.
+    function openPhase2cDrawer(type, id = "") {
+      if (type === "change") phase2cDrawer = changeDrawerHTML();
+      else if (type === "bill") phase2cDrawer = billDrawerHTML();
+      else if (type === "addon") phase2cDrawer = simpleDrawer("顺手来一个", `<p>这里展示当前路线附近的本地 Mock 小加购，不自动进入账单。</p><div class="qty-row"><span>蜜桃乌龙 ¥18</span><input id="addonQty" type="number" min="1" value="1"><button class="primary" onclick="confirmProductPurchase('addon_milk_tea','蜜桃乌龙',18,'addonQty')">加入</button></div>`);
+      else if (type === "pay") phase2cDrawer = payDrawerHTML(id);
+      else if (type === "coupon") phase2cDrawer = couponDrawerHTML(id);
+      else if (type === "review") phase2cDrawer = simpleDrawer("评价", `<textarea placeholder="写一句评价 Mock"></textarea><button class="primary" onclick="alert('评价已提交 Mock');closePhase2cDrawer()">提交评价</button>`);
+      else if (type === "support") phase2cDrawer = simpleDrawer("联系客服", `<p>已进入客服 Mock 页面，不连接真实客服。</p><button onclick="alert('客服工单已生成 Mock')">生成工单</button>`);
+      else if (type === "product") phase2cDrawer = productDrawerHTML(id);
+      render();
+    }
+
+    function payDrawerHTML(id) {
+      const m = findMerchant(id) || {};
+      const defaultAmount = Math.max(20, Number(m.price || m.cost || 128));
+      return simpleDrawer("买单", `
+        <p>请选择本地 Mock 支付方式，不会触发真实支付。</p>
+        <div class="booking-row"><span>金额</span><input id="mockPayAmount" value="${Math.round(defaultAmount)}"></div>
+        <div class="segment-actions">
+          <button class="primary" onclick="confirmMeituanPay(${jsArg(id)})">美团买单</button>
+          <button onclick="openPhase2cDrawer('coupon', ${jsArg(id)})">团购券</button>
+        </div>
+      `);
+    }
+
+    function confirmMeituanPay(id) {
+      const amount = Number(document.getElementById("mockPayAmount")?.value || 0);
+      const m = findMerchant(id) || {};
+      upsertBillItem(`pay_${id || Date.now()}`, `${m.name || "美团买单"}`, amount, "pay");
+      phase2cPayments[id || "manual"] = {amount, status: "confirmed"};
+      closePhase2cDrawer();
+    }
+
+    function couponDrawerHTML(id) {
+      const rawId = String(id || "");
+      const merchantId = rawId.startsWith("coupon_") ? rawId.replace(/^coupon_/, "").replace(/_\d+$/, "") : rawId;
+      const m = findMerchant(merchantId) || {};
+      const coupons = m.coupons || [{title: "到店团购券", price: 88}, {title: "满100减20", price: 20}];
+      return simpleDrawer("购买/核验券", coupons.map((c, idx) => {
+        const key = `coupon_${merchantId || "unknown"}_${idx}`;
+        const state = phase2cCoupons[key] || {};
+        const title = c.title || c.name || "到店团购券";
+        const price = Number(c.price || c.value || 0);
+        return `<div class="segment"><b>${esc(title)}</b><p>¥${esc(price)} · ${state.purchased ? "二维码 Mock 已生成" : "未购买"}</p><div class="segment-actions">${state.purchased ? `<button class="primary" onclick="verifyCoupon(${jsArg(key)}, ${jsArg(title)}, ${price})">${state.verified ? "已验券" : "确认验券"}</button>` : `<button class="primary" onclick="buyCoupon(${jsArg(key)}, ${jsArg(title)}, ${price})">购买券</button>`}</div></div>`;
+      }).join(""));
+    }
+
+    function buyCoupon(key, title, price) {
+      phase2cCoupons[key] = {title, price, purchased: true, verified: false};
+      alert("已购买，二维码 Mock 已生成");
+      openPhase2cDrawer("coupon", key);
+    }
+
+    function verifyCoupon(key, title, price) {
+      phase2cCoupons[key] = {...(phase2cCoupons[key] || {}), title, price, purchased: true, verified: true};
+      upsertBillItem(key, title, Number(price || 0), "coupon");
+      openPhase2cDrawer("coupon", key);
+    }
+
+    function productDrawerHTML(name) {
+      const label = String(name || "本地生活商品");
+      const price = /玫瑰|蔷薇|茉莉/.test(label) ? 188 : (/薯片|可乐|零食/.test(label) ? 12 : 18);
+      return simpleDrawer("商品选择", `
+        <p>${esc(label)}，本地 Mock 商品选择。</p>
+        <div class="qty-row"><span>单价 ¥${price}</span><input id="productQty" type="number" min="1" value="1"><button class="primary" onclick="confirmProductPurchase(${jsArg(`product_${label}`)}, ${jsArg(label)}, ${price}, 'productQty')">确定</button></div>
+      `);
+    }
+
+    function confirmProductPurchase(id, label, price, qtyInputId) {
+      const qty = Math.max(1, Number(document.getElementById(qtyInputId)?.value || 1));
+      upsertBillItem(id, `${label} ×${qty}`, Number(price || 0) * qty, "product");
+      closePhase2cDrawer();
+    }
+
+    function billItemsFromBlocks() {
+      return phase2cBill.items || [];
+    }
+
+    function billDrawerHTML() {
+      const party = Math.max(1, actualPartySize());
+      phase2cBill.items.forEach(it => { if (phase2cBill.included[it.id] === undefined) phase2cBill.included[it.id] = true; });
+      const total = phase2cBill.items.filter(it => phase2cBill.included[it.id]).reduce((s, it) => s + Number(it.amount || 0), 0);
+      const empty = phase2cBill.items.length ? "" : `<p class="muted">还没有确认买单、验券、打车或商品加购，所以账单暂时为空。</p>`;
+      return `<div class="mini-drawer"><div class="drawer-bar"></div><h2>账单</h2>
+        ${empty}
+        ${phase2cBill.items.map(it => `<label class="booking-row"><span><input type="checkbox" ${phase2cBill.included[it.id] ? "checked" : ""} onchange="phase2cBill.included['${esc(it.id)}']=this.checked;openPhase2cDrawer('bill')"> ${esc(it.label)}</span><b>¥${Math.round(it.amount || 0)}</b></label>`).join("")}
+        <div class="booking-row"><span>总金额</span><input value="${Math.round(total)}" oninput="phase2cBill.total=Number(this.value||0)"></div>
+        <div class="booking-row"><span>单人金额</span><input value="${Math.round(total / party)}" oninput="phase2cBill.perPerson=Number(this.value||0)"></div>
+        ${party > 1 ? `<button class="primary" onclick="alert('AA 分账链接已生成 Mock')">分账</button>` : ""}
+        <p class="split-note">收款链接：/mock/a-money?amount=${Math.round(total)}（美团/微信支付 Mock）</p>
+        <button onclick="closePhase2cDrawer()">关闭</button>
+      </div>`;
+    }
+
+    function addBillItem(label, amount) {
+      upsertBillItem("manual_" + Date.now(), label, amount, "manual");
+    }
+
+    function upsertBillItem(id, label, amount, kind = "manual") {
+      const cleanId = String(id || ("manual_" + Date.now()));
+      const value = Math.max(0, Number(amount || 0));
+      const next = {id: cleanId, label, amount: value, kind};
+      const index = phase2cBill.items.findIndex(it => it.id === cleanId);
+      if (index >= 0) phase2cBill.items[index] = next;
+      else phase2cBill.items.push(next);
+      phase2cBill.included[cleanId] = true;
+    }
+
+    function findMerchant(id) {
+      const wanted = String(id || "");
+      if (!wanted) return null;
+      const choiceSteps = Object.values(phase2cChoices || {}).flatMap(choice => [
+        choice.A, choice.B, choice.chosen ? choice[choice.chosen] : null
+      ]).filter(Boolean);
+      const bookingSteps = ((session.booking_review || {}).segments || []).map(seg => normalizeBusinessStep({
+        id: seg.merchant_id || seg.id,
+        merchant_id: seg.merchant_id || seg.id,
+        name: seg.merchant_name,
+        category: seg.category,
+        area: seg.area,
+        price: seg.price || seg.cost,
+        cost: seg.price || seg.cost,
+        open: seg.open,
+        close: seg.close,
+        image: seg.image,
+        rating: seg.rating,
+        review_snippet: seg.review_snippet
+      }));
+      const allPlans = plans().flatMap(p => businessSteps(p));
+      const all = [
+        ...(phase2cMerchantCache || []),
+        ...allPlans,
+        ...businessSteps(mainPlan()),
+        ...deliveryStepsFromPlan(),
+        ...choiceSteps,
+        ...bookingSteps
+      ];
+      return all.find(m => String(m.id || m.merchant_id || "") === wanted || String(m.name || "") === wanted) || null;
+    }
+
+    function mockMerchantFromId(id) {
+      const text = String(id || "本地生活商户");
+      const isFlower = text.includes("flower");
+      return normalizeBusinessStep({
+        id: text,
+        merchant_id: text,
+        name: isFlower ? "美团鲜花速达" : (text || "本地生活商户"),
+        category: isFlower ? "花店" : "本地生活",
+        area: (session.request || {}).home_area || "当前区域",
+        price: isFlower ? 188 : 88,
+        cost: isFlower ? 188 : 88,
+        rating: "4.8",
+        review_count: 268,
+        review_snippet: isFlower ? "配送稳定，适合生日和纪念日。" : "本地 Mock 商详，适合当前行程。",
+        open: "10:00",
+        close: "22:00",
+        image: isFlower ? "💐" : "🏬",
+        recommended_dishes: isFlower ? ["生日玫瑰88朵", "恩爱蔷薇99朵", "纪念茉莉66朵"] : ["精选套餐", "团购券", "到店服务"],
+        coupons: [{title: "新人立减券", price: 20}, {title: "到店套餐券", price: isFlower ? 166 : 88}]
+      });
+    }
+
+    function openPhase2cMerchantDetail(id) {
+      let m = findMerchant(id);
+      if (!m && phase2cMerchantCache === null) {
+        loadPhase2cMerchants().then(() => openPhase2cMerchantDetail(id));
+        return;
+      }
+      if (!m) m = mockMerchantFromId(id);
+      const coupons = m.coupons || [{title: "双人套餐券", price: Math.max(20, Math.round((m.price || 80) * 1.6))}, {title: "满100减20", price: 20}];
+      phase2cDrawer = `<div class="mini-drawer"><div class="drawer-bar"></div><div class="store-img" style="width:100%;height:130px;font-size:54px">${esc(m.image || emojiForCategory(m.category))}</div><h2>${esc(m.name)}</h2><p>★ ${esc(m.rating || "4.7")} · ${esc(m.area || "-")} · 营业 ${esc(m.open || "10:00")}-${esc(m.close || "22:00")} · 人均 ${money(m.price)}</p><div class="quote">${esc(m.review_snippet || "精选好评，适合当前行程。")}</div><h3>店铺券</h3>${coupons.map(c => `<div class="segment"><b>${esc(c.title || c.name)}</b><p>¥${esc(c.price || c.value || 0)} · Mock券</p></div>`).join("")}<h3>特色</h3><p>${esc((m.recommended_dishes || m.features || m.review_tags || []).join("、") || m.category)}</p><button onclick="closePhase2cDrawer()">关闭</button></div>`;
+      renderKeepingScroll();
+    }
+
+    const oldResetFlow = resetFlow;
+    async function resetFlow() {
+      phase2cChoices = {};
+      phase2cVotes = {};
+      phase2cBookings = {};
+      phase2cMessages = [];
+      phase2cExecutionIndex = 0;
+      phase2cDrawer = "";
+      phase2cBill = {items: [], included: {}, total: 0, perPerson: 0};
+      phase2cTaxi = {};
+      phase2cPayments = {};
+      phase2cCoupons = {};
+      phase2cProductState = {};
+      await oldResetFlow();
+    }
+    render();
+  </script>
+</body>
+</html>

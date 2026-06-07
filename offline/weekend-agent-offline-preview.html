@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>美团周到 · 离线演示预览</title>
+<style>
+:root{
+  --yellow:#ffd000;
+  --yellow-dark:#e8b900;
+  --ink:#171717;
+  --muted:#6b6b6b;
+  --line:#ececec;
+  --bg:#f6f6f6;
+  --card:#fff;
+  --orange:#ff5a1f;
+  --green:#20aa6b;
+  --blue:#2864ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(900px 600px at 90% -10%,rgba(255,208,0,.28),transparent 60%),
+    linear-gradient(180deg,#fff 0,#f5f5f5 48%,#efefef 100%);
+}
+.top{
+  max-width:1180px;
+  margin:0 auto;
+  padding:22px 24px 10px;
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:center;
+}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{
+  width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(150deg,#fff2a8,var(--yellow));
+  display:grid;place-items:center;font-size:24px;
+  box-shadow:0 10px 22px rgba(232,185,0,.26);
+}
+h1{font-size:24px;margin:0}
+.sub{font-size:13px;color:var(--muted);margin-top:2px}
+.pill{
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:999px;
+  padding:8px 13px;
+  font-size:13px;
+  color:var(--muted);
+}
+.layout{
+  max-width:1180px;
+  margin:0 auto;
+  padding:14px 24px 48px;
+  display:grid;
+  grid-template-columns:390px 1fr;
+  gap:28px;
+  align-items:start;
+}
+.phone{
+  background:#111;
+  border-radius:42px;
+  padding:12px;
+  box-shadow:0 30px 70px rgba(0,0,0,.25);
+  position:sticky;
+  top:20px;
+}
+.screen{
+  height:760px;
+  border-radius:31px;
+  background:var(--bg);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.status{
+  height:38px;
+  background:var(--yellow);
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  padding:0 22px 7px;
+  font-size:13px;
+  font-weight:700;
+}
+.head{
+  background:var(--yellow);
+  padding:10px 16px 15px;
+}
+.loc{font-weight:800;font-size:15px;margin-bottom:10px}
+.search{
+  background:#fff;
+  border-radius:999px;
+  padding:10px 14px;
+  color:var(--muted);
+  font-size:13px;
+}
+.scroll{overflow:auto;padding:12px;flex:1}
+.hero{
+  background:linear-gradient(135deg,#ffe87a,var(--yellow));
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 8px 20px rgba(232,185,0,.18);
+}
+.hero b{font-size:18px}
+.hero p{margin:5px 0 0;color:#5c4a00;font-size:13px}
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:14px;
+  margin-top:12px;
+  border:1px solid #f0f0f0;
+  box-shadow:0 4px 14px rgba(0,0,0,.035);
+}
+.card h3{font-size:15px;margin:0 0 8px}
+.kv{display:grid;grid-template-columns:70px 1fr;gap:6px;font-size:13px}
+.kv span:first-child{color:var(--muted)}
+.step{
+  padding:10px 0;
+  border-top:1px dashed var(--line);
+}
+.step:first-child{border-top:0}
+.step-title{font-weight:800}
+.meta{font-size:12px;color:var(--muted);margin-top:2px}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.tag{
+  font-size:12px;
+  border-radius:999px;
+  padding:4px 9px;
+  background:#f3f3f3;
+  color:#555;
+}
+.tag.orange{background:#fff1ea;color:var(--orange)}
+.tag.green{background:#eaf8f1;color:var(--green)}
+.tag.blue{background:#eef3ff;color:var(--blue)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+button{
+  border:0;
+  border-radius:10px;
+  padding:10px 12px;
+  background:#111;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+button.secondary{
+  background:#fff;
+  color:#222;
+  border:1px solid var(--line);
+}
+.panel{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:14px;
+}
+.panel h2{font-size:20px;margin:0 0 8px}
+.panel p{color:var(--muted);margin:0;line-height:1.7}
+.routes{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.route{
+  text-align:left;
+  background:#fff;
+  color:var(--ink);
+  border:1px solid var(--line);
+  padding:14px;
+  min-height:96px;
+}
+.route.active{
+  border-color:var(--yellow-dark);
+  background:#fffbea;
+  box-shadow:0 8px 20px rgba(232,185,0,.12);
+}
+.route small{display:block;color:var(--muted);margin-top:5px;font-weight:500;line-height:1.5}
+.timeline{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+.wide-card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+}
+.wide-card b{font-size:15px}
+.mock{
+  border-left:4px solid var(--orange);
+  background:#fff7f2;
+}
+.fine{font-size:12px;color:var(--muted);line-height:1.7}
+@media(max-width:920px){
+  .layout{grid-template-columns:1fr}
+  .phone{position:static;max-width:390px;margin:0 auto}
+  .routes{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <div class="logo">周</div>
+    <div>
+      <h1>美团周到 · 离线演示预览</h1>
+      <div class="sub">静态 HTML，不连接后端；完整交互请看本地服务版。</div>
+    </div>
+  </div>
+  <div class="pill">本地 Mock · 无真实支付 · 无外部 API</div>
+</div>
+
+<main class="layout">
+  <section class="phone">
+    <div class="screen">
+      <div class="status"><span>13:00</span><span>5G 100%</span></div>
+      <div class="head">
+        <div class="loc">南京 · 新街口</div>
+        <div class="search">说一句，我帮你把这场局安排到能出门</div>
+      </div>
+      <div class="scroll">
+        <div class="hero">
+          <b id="phoneGoal">朋友生日，4 个人，预算 300/人，想有点仪式感</b>
+          <p id="phoneSub">先补齐关键条件，再给出可执行方案。</p>
+        </div>
+        <div class="card">
+          <h3>本次目标</h3>
+          <div class="kv" id="goalKv"></div>
+          <div class="tagrow" id="tags"></div>
+        </div>
+        <div class="card">
+          <h3>候选方案</h3>
+          <div id="steps"></div>
+          <div class="actions">
+            <button onclick="setStage('vote')">选这个方案</button>
+            <button class="secondary" onclick="setStage('rescue')">现场情况变了</button>
+          </div>
+        </div>
+        <div class="card" id="stageCard">
+          <h3 id="stageTitle">朋友确认</h3>
+          <div class="fine" id="stageBody"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>怎么演示</h2>
+      <p>这份离线页只用来快速看“产品主线”和讲法：理解意图、补齐约束、分离主方案和可选加购、朋友确认、Mock 预约、Mock 结算、半路救援。它不会调用 Python Agent，也不会访问真实美团接口。</p>
+    </div>
+    <div class="panel">
+      <h2>选择一条演示路线</h2>
+      <div class="routes" id="routes"></div>
+    </div>
+    <div class="panel">
+      <h2>当前路线说明</h2>
+      <div class="timeline" id="explain"></div>
+    </div>
+    <div class="panel mock">
+      <h2>Mock 边界</h2>
+      <p>预约、投票、支付、分账、客服、配送、会员、优惠、地图、库存全部是本地 Mock 展示，不接真实外部 API，不产生真实交易。</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const routes = [
+  {
+    id:"birthday",
+    title:"生日组局闭环",
+    desc:"活动 + 餐厅 + 蛋糕鲜花送达，突出跨品类编排。",
+    goal:"朋友生日，4 个人，预算 300/人，想有点仪式感",
+    kv:[["目标","生日聚会"],["人数","4 人"],["预算","300 元/人"],["重点","仪式感、可预约、适合分享"]],
+    tags:["生日送达","餐厅不混入活动槽位","蛋糕鲜花只做生日场景"],
+    steps:[
+      ["18:00", "轻松活动", "先安排不太累的开场活动，保证后续吃饭节奏。"],
+      ["19:30", "生日餐厅", "展示评分、评价关键词、团购套餐和包间状态。"],
+      ["19:10", "蛋糕鲜花送达", "作为生日送达加购，不放进“路上加一杯”。"]
+    ],
+    explain:["开场强调它不是列表推荐，而是把这场生日局拆成多个可执行槽位。","朋友确认在预约前发生，发起人最后确认后才进入 Mock 预约。","蛋糕鲜花是跨品类编排亮点，但全程标注为本地 Mock。"]
+  },
+  {
+    id:"date",
+    title:"约会安排闭环",
+    desc:"电影/展览 + 轻量饮品，突出主方案和加购分离。",
+    goal:"今晚想和对象看电影，别安排吃饭",
+    kv:[["目标","看电影"],["时间","今晚"],["避开","不吃饭"],["偏好","轻松、不要太赶"]],
+    tags:["no_meal 生效","奶茶为可选加购","主方案只有电影"],
+    steps:[
+      ["19:00", "电影院", "只推荐电影/影院，不把餐厅塞进核心行程。"],
+      ["可选", "热饮/零食", "明确标注可跳过，不默认进入账单。"]
+    ],
+    explain:["评委常问为什么用户说看电影还出现吃饭，这条路线专门证明 no_meal 会压过商业推荐。","加购只在 optional_addons 里，用户点击加入后才进入 Mock 账单。"]
+  },
+  {
+    id:"script",
+    title:"长时间剧本杀补给",
+    desc:"欢乐盒装本 + 拼场状态 + DM 评分 + 补给加购。",
+    goal:"4 个朋友今晚 19:00 想玩欢乐盒装本，人均 150，新街口，公共交通，4 小时",
+    kv:[["目标","欢乐盒装本"],["人数","4 人"],["预算","150 元/人"],["时长","4 小时"]],
+    tags:["剧本杀业务字段","欢乐本不写烧脑","餐饮只做可选"],
+    steps:[
+      ["19:00", "欢乐盒装本 · 今晚可成局", "展示本名、类型、人数、拼场状态、DM 评分、新手友好、恐怖度、时长。"],
+      ["可选", "路上加一杯", "只从奶茶/咖啡/甜品中选，不混入蛋糕鲜花。"]
+    ],
+    explain:["这条路线用于证明剧本杀不是泛活动，而是有自己的业务字段。","用户没有说吃饭时，餐饮不能强塞入核心方案。"]
+  },
+  {
+    id:"rescue",
+    title:"半路救援",
+    desc:"到店满座、售罄、朋友晚到时，只替换坏掉的节点。",
+    goal:"已经到餐厅门口了，排队太久，帮我换一家",
+    kv:[["问题","餐厅满座/排队"],["位置","当前商圈附近"],["策略","只换餐厅节点"],["确认","超预算需用户确认"]],
+    tags:["局部重排","保留其他节点","Mock 客服入口"],
+    steps:[
+      ["当前", "原餐厅不可用", "识别受影响行程段，不推翻整条行程。"],
+      ["替换", "同商圈替代餐厅", "优先同商圈/步行范围内，重算预算和时间。"],
+      ["后续", "Mock 客服/补救", "必要时生成本地 Mock 工单，不触发真实客服。"]
+    ],
+    explain:["这是命题六的高价值瞬间：不是只会规划，而是出问题后把局救回来。","演示时强调 changed_segments / kept_segments，说明它不是全局乱重排。"]
+  }
+];
+
+let current = routes[0];
+let stage = "vote";
+
+function tagClass(t){
+  if(t.includes("Mock") || t.includes("no_meal")) return "orange";
+  if(t.includes("可选") || t.includes("保留")) return "green";
+  return "blue";
+}
+
+function render(){
+  document.getElementById("phoneGoal").textContent = current.goal;
+  document.getElementById("phoneSub").textContent = current.desc;
+  document.getElementById("goalKv").innerHTML = current.kv.map(([k,v]) => `<span>${k}</span><b>${v}</b>`).join("");
+  document.getElementById("tags").innerHTML = current.tags.map(t => `<span class="tag ${tagClass(t)}">${t}</span>`).join("");
+  document.getElementById("steps").innerHTML = current.steps.map(s => `
+    <div class="step">
+      <div class="step-title">${s[0]} · ${s[1]}</div>
+      <div class="meta">${s[2]}</div>
+    </div>`).join("");
+  document.getElementById("routes").innerHTML = routes.map(r => `
+    <button class="route ${r.id===current.id ? "active" : ""}" onclick="pick('${r.id}')">
+      ${r.title}<small>${r.desc}</small>
+    </button>`).join("");
+  document.getElementById("explain").innerHTML = current.explain.map((x,i) => `
+    <div class="wide-card"><b>${i+1}. ${x}</b></div>`).join("");
+  renderStage();
+}
+
+function renderStage(){
+  const map = {
+    vote:["朋友确认","发给朋友投票或跳过投票。朋友反馈必须发生在最终预约前。"],
+    book:["最终确认并预约","发起人确认后才生成本地 Mock 预约，不产生真实订单。"],
+    bill:["预约完成","查看 Mock 账单、复制群聊消息，可进入 Mock 分账。"],
+    rescue:["现场情况变了","触发半路救援：只修改出问题的节点，保留其他已确认安排。"]
+  };
+  const [title, body] = map[stage] || map.vote;
+  document.getElementById("stageTitle").textContent = title;
+  document.getElementById("stageBody").textContent = body;
+}
+
+function pick(id){
+  current = routes.find(r => r.id === id) || routes[0];
+  stage = id === "rescue" ? "rescue" : "vote";
+  render();
+}
+
+function setStage(next){
+  stage = next === "vote" ? "book" : "rescue";
+  renderStage();
+}
+
+render();
+</script>
+</body>
+</html>

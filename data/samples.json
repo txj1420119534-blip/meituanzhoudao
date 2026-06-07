@@ -1,0 +1,54 @@
+[
+  {
+    "raw_text": "今天下午和朋友4个人出去玩，想拍照吃饭不要太累，人均150，晚上别排队",
+    "scene": "friends_out",
+    "party_size": 4,
+    "start_time": "14:00",
+    "window_hours": 5,
+    "home_area": "新街口",
+    "budget_per_person": 150,
+    "preferences": ["photo", "good_food", "easy_pace"],
+    "hard_limits": ["no_evening_queue", "stay_near"],
+    "has_kid": false,
+    "transport": "public"
+  },
+  {
+    "raw_text": "今天下午想带5岁的孩子和老婆出去玩几个小时，老婆在减肥要清淡点，别离家太远",
+    "scene": "family_out",
+    "party_size": 3,
+    "start_time": "14:00",
+    "window_hours": 4,
+    "home_area": "新街口",
+    "budget_per_person": 120,
+    "preferences": ["kid_friendly", "easy_pace", "light_food"],
+    "hard_limits": ["stay_near", "kid_safe"],
+    "has_kid": true,
+    "transport": "public"
+  },
+  {
+    "raw_text": "周末不想出门，想在家看个电影点个外卖，轻松一点",
+    "scene": "stay_in",
+    "party_size": 2,
+    "start_time": "14:00",
+    "window_hours": 5,
+    "home_area": "线上",
+    "budget_per_person": 80,
+    "preferences": ["relax", "comfortable"],
+    "hard_limits": [],
+    "has_kid": false,
+    "transport": "public"
+  },
+  {
+    "raw_text": "和对象周末下午想约会，文艺一点的，人均120",
+    "scene": "couple",
+    "party_size": 2,
+    "start_time": "14:00",
+    "window_hours": 5,
+    "home_area": "老门东",
+    "budget_per_person": 120,
+    "preferences": ["culture", "photo", "easy_pace"],
+    "hard_limits": ["stay_near"],
+    "has_kid": false,
+    "transport": "public"
+  }
+]

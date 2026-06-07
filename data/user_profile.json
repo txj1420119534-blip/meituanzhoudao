@@ -1,0 +1,7 @@
+{
+  "name": "小明",
+  "prefers": ["安静", "不辣", "评分高", "出片"],
+  "avoid": ["排队", "太远"],
+  "vip_level": 2,
+  "history_rejected": []
+}

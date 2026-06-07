@@ -1,0 +1,102 @@
+{
+  "friends_out": {
+    "label": "朋友出门安排",
+    "slots": [
+      {
+        "role": "PLAY",
+        "title": "先去玩"
+      },
+      {
+        "role": "EAT",
+        "title": "再去吃"
+      }
+    ],
+    "addon": {
+      "role": "ADDON",
+      "title": "顺路加一杯"
+    }
+  },
+  "play_only": {
+    "label": "活动优先安排",
+    "slots": [
+      {
+        "role": "PLAY",
+        "title": "先把活动订好"
+      }
+    ],
+    "addon": {
+      "role": "ADDON",
+      "title": "散场顺路"
+    }
+  },
+  "family_out": {
+    "label": "家庭亲子安排",
+    "slots": [
+      {
+        "role": "PLAY",
+        "want": "亲子乐园",
+        "title": "带娃玩"
+      },
+      {
+        "role": "EAT",
+        "title": "吃点清淡的"
+      }
+    ],
+    "addon": {
+      "role": "ADDON",
+      "title": "给孩子加个甜品"
+    }
+  },
+  "stay_in": {
+    "label": "宅家安排",
+    "slots": [
+      {
+        "role": "STAYIN",
+        "want": [
+          "外卖",
+          "闪购零食"
+        ],
+        "title": "吃点什么"
+      }
+    ]
+  },
+  "food_only": {
+    "label": "美食安排",
+    "slots": [
+      {
+        "role": "EAT",
+        "title": "先把餐厅订好"
+      }
+    ],
+    "addon": {
+      "role": "ADDON",
+      "title": "顺路加一杯"
+    }
+  },
+  "addon_only": {
+    "label": "轻量单点",
+    "slots": [
+      {
+        "role": "ADDON",
+        "title": "喝点什么"
+      }
+    ]
+  },
+  "couple": {
+    "label": "情侣约会安排",
+    "slots": [
+      {
+        "role": "PLAY",
+        "title": "约会玩"
+      },
+      {
+        "role": "EAT",
+        "title": "约会吃"
+      }
+    ],
+    "addon": {
+      "role": "ADDON",
+      "title": "甜蜜加一杯"
+    }
+  }
+}
