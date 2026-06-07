@@ -2179,6 +2179,109 @@
       return phase2cMerchantCache;
     }
 
+    function parseClockMinutes(value) {
+      const text = String(value || "").trim();
+      const match = text.match(/(\d{1,2}):(\d{2})/);
+      if (!match) return null;
+      const hour = Number(match[1]);
+      const minute = Number(match[2]);
+      if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+      return hour * 60 + minute;
+    }
+
+    function valueAsMinutes(value) {
+      const numeric = Number(value);
+      if (Number.isFinite(numeric) && numeric > 0) return numeric;
+      const text = String(value || "");
+      const match = text.match(/(\d+(?:\.\d+)?)/);
+      if (!match) return null;
+      const amount = Number(match[1]);
+      if (text.includes("小时") || /\bh\b/i.test(text)) return Math.round(amount * 60);
+      return amount;
+    }
+
+    function segmentDurationMinutes(step = {}) {
+      const explicit = valueAsMinutes(step.duration_minutes || step.duration);
+      if (explicit) return explicit;
+      const start = parseClockMinutes(step.start);
+      const end = parseClockMinutes(step.end);
+      if (start !== null && end !== null) {
+        const normalizedEnd = end >= start ? end : end + 1440;
+        return Math.max(20, normalizedEnd - start);
+      }
+      const category = String(step.category || "");
+      const kind = String(step.kind || "");
+      if (isDeliveryStep(step)) return 35;
+      if (category.includes("剧本") || category.includes("密室") || kind === "activity") return 240;
+      if (category.includes("电影")) return 130;
+      if (category.includes("KTV")) return 180;
+      if (kind === "restaurant" || category.includes("餐") || category.includes("火锅") || category.includes("烤肉")) return 90;
+      return 90;
+    }
+
+    function transitMinutesBeforeSegment(index) {
+      const transits = ((mainPlan().itinerary || {}).transits || []);
+      const transit = transits[index] || transits[Math.max(0, index - 1)] || {};
+      const options = transit.options || [];
+      const publicOpt = options.find(o => String(o.mode || o.label || "").includes("公共")) || options[0] || {};
+      return valueAsMinutes(publicOpt.duration_minutes || publicOpt.minutes || publicOpt.duration) || 20;
+    }
+
+    function selectedStepForSegment(index) {
+      const selected = phase2cChoices[index]?.chosen;
+      return (selected && phase2cChoices[index]?.[selected]) || segmentOption(index, 0) || businessSteps(mainPlan())[index] || {};
+    }
+
+    function segmentArrivalMinutes(index) {
+      const req = session.request || {};
+      const steps = businessSteps(mainPlan());
+      let time = parseClockMinutes(req.start_time || steps[0]?.start) || (19 * 60);
+      for (let j = 0; j <= index; j += 1) {
+        time += transitMinutesBeforeSegment(j);
+        if (j === index) break;
+        time += segmentDurationMinutes(selectedStepForSegment(j));
+      }
+      return time;
+    }
+
+    function merchantOpenForSegment(merchant, segmentIndex, baseStep = {}) {
+      const open = parseClockMinutes(merchant.open || baseStep.open);
+      const closeRaw = parseClockMinutes(merchant.close || baseStep.close);
+      if (open === null || closeRaw === null) return true;
+      let close = closeRaw <= open ? closeRaw + 1440 : closeRaw;
+      let windowOpen = open;
+      let arrival = segmentArrivalMinutes(segmentIndex);
+      while (arrival >= close + 1440) {
+        windowOpen += 1440;
+        close += 1440;
+      }
+      const duration = segmentDurationMinutes({...baseStep, ...merchant});
+      return arrival >= windowOpen && arrival + duration <= close;
+    }
+
+    function candidatePrice(step = {}) {
+      return Number(step.price || step.cost || 0) || 0;
+    }
+
+    function replacementBudgetOk(segmentIndex, candidate) {
+      const budget = Number((session.request || {}).budget_per_person || 0);
+      if (!Number.isFinite(budget) || budget <= 0) return true;
+      const steps = businessSteps(mainPlan());
+      let total = 0;
+      for (let j = 0; j < steps.length; j += 1) {
+        total += j === segmentIndex ? candidatePrice(candidate) : candidatePrice(selectedStepForSegment(j));
+        total += 2;
+      }
+      return total <= budget;
+    }
+
+    function compliantReplacementPool(pool, segmentIndex, current) {
+      return pool.filter(m =>
+        merchantOpenForSegment(m, segmentIndex, current) &&
+        replacementBudgetOk(segmentIndex, m)
+      );
+    }
+
     async function replaceSegmentOption(i, label) {
       const merchants = await loadPhase2cMerchants();
       const current = phase2cChoices[i]?.[label] || segmentOption(i, label === "A" ? 0 : 1);
@@ -2189,7 +2292,15 @@
       );
       const sameAnchor = categoryPool.filter(m => anchor && m.area === anchor);
       const sameCurrent = categoryPool.filter(m => current.area && m.area === current.area);
-      const pool = sameAnchor.length ? sameAnchor : (sameCurrent.length ? sameCurrent : categoryPool);
+      const anchoredPool = compliantReplacementPool(sameAnchor, i, current);
+      const currentAreaPool = compliantReplacementPool(sameCurrent, i, current);
+      const broadPool = compliantReplacementPool(categoryPool, i, current);
+      const areaLocked = Boolean(anchor || current.area);
+      const pool = anchoredPool.length ? anchoredPool : (currentAreaPool.length ? currentAreaPool : (areaLocked ? [] : broadPool));
+      if (!pool.length) {
+        alert("没有找到符合时间、预算和同类要求的候选店。");
+        return;
+      }
       const next = pool[(Date.now() + i + label.charCodeAt(0)) % Math.max(1, pool.length)] || current;
       phase2cChoices[i] = {...(phase2cChoices[i] || {}), [label]: merchantToStep(next, current)};
       renderKeepingScroll();
@@ -2717,31 +2828,40 @@
     }
     function changeDrawerHTML() {
       const segs = businessSteps(mainPlan());
+      const selected = window.phase2cChangeSegment === undefined ? null : Number(window.phase2cChangeSegment);
       return `<div class="mini-drawer"><div class="drawer-bar"></div><h2>行程有变化？</h2>
-        <p>您需要调整哪里？</p>
-        ${segs.map((s, i) => `<button onclick="phase2cChangeSegment=${i}">${esc(s.name)} · ${esc(s.category)}</button>`).join("")}
+        <p>先选中需要修改的行程。</p>
+        ${segs.map((s, i) => `<button class="${selected === i ? "primary" : ""}" style="${selected === i ? "background:var(--mt-yellow);color:#111;border-color:#111;" : ""}" onclick="selectPhase2cRescueSegment(${i})">${esc(s.name)} · ${esc(s.category)}</button>`).join("")}
+        <p>再选择需要修改的方向。</p>
         <div class="chips">
-          ${["商家满座 / 排队太久", "朋友迟到", "想改时间", "券不会用", "想退款", "想投诉", "其他问题"].map(x => `<button class="chip" onclick="mockRescue('${esc(x)}')">${esc(x)}</button>`).join("")}
+          <button class="chip" ${selected === null ? "disabled" : ""} onclick="mockRescue('不去了')">不去了</button>
+          <button class="chip" ${selected === null ? "disabled" : ""} onclick="mockRescue('晚点到')">晚点到</button>
+          <button class="chip" ${selected === null ? "disabled" : ""} onclick="mockRescue('加个人')">加个人</button>
         </div>
         <div id="rescuePreview">${rescueResultHTML || ""}</div>
-        <button class="primary" onclick="confirmPhase2cRescueBooking()">确认修改并预约</button>
-        <button onclick="closePhase2cDrawer()">取消</button>
+        <button onclick="closePhase2cDrawer()">关闭</button>
       </div>`;
     }
+    function selectPhase2cRescueSegment(i) {
+      window.phase2cChangeSegment = i;
+      rescueResultHTML = "";
+      phase2cDrawer = changeDrawerHTML();
+      renderKeepingScroll();
+    }
     function confirmPhase2cRescueBooking() {
-      alert("已根据修改理由重新生成预约 Mock");
       closePhase2cDrawer();
     }
-    async function mockRescue(reason) {
+    function mockRescue(reason) {
       const segs = businessSteps(mainPlan());
-      const idx = window.phase2cChangeSegment || 0;
-      const type = reason.includes("迟到") || reason.includes("时间") ? "time_conflict" : (segs[idx]?.kind === "restaurant" ? "restaurant_full" : "ticket_soldout");
-      const data = await post("/exception", {type, context: {affected_segment_index: idx, location_state: "near_current_merchant", current_area: segs[idx]?.area, note: reason}}, "正在局部调整…");
-      session = data.session || session;
-      const exc = session.exception_result || data.result || {};
-      rescueResultHTML = `<div class="segment"><b>局部修改结果</b><p>${esc(exc.reason || "已根据问题调整当前段，其它段保持不动。")}</p><span class="tag good">保留其它行程</span><span class="tag warn">原因：${esc(reason)}</span></div>`;
+      const idx = window.phase2cChangeSegment === undefined ? null : Number(window.phase2cChangeSegment);
+      if (idx === null || Number.isNaN(idx)) {
+        alert("请先选中需要修改的行程。");
+        return;
+      }
+      const result = reason === "不去了" ? "已取消预约" : "已为您通知商家";
+      rescueResultHTML = `<div class="segment"><b>${esc(segs[idx]?.name || "当前行程")}</b><p>${esc(result)}</p><span class="tag warn">调整方向：${esc(reason)}</span></div>`;
       phase2cDrawer = changeDrawerHTML();
-      render();
+      renderKeepingScroll();
     }
     function billItemsFromBlocks(blocks) {
       const items = [];
